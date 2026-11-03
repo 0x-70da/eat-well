@@ -8,6 +8,8 @@ import {
   numeric,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema.js";
+export { user };
+
 
 // Categories table
 export const categories = pgTable(

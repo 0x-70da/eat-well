@@ -12,7 +12,10 @@ export const adminMiddleware = async (
     headers: fromNodeHeaders(req.headers),
   });
 
-  if (!session || !session.user || session.user.role !== "admin") {
+  const staffRoles = ["admin", "super_admin", "manager", "order_manager", "staff"];
+  const userRole = session?.user?.role ?? "";
+
+  if (!session || !session.user || !staffRoles.includes(userRole)) {
     return error(res, "Unauthorized", 401);
   }
 
