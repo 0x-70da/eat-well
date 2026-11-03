@@ -16,29 +16,44 @@ export const get = async <T>(
   url: string,
   options?: RequestInit,
 ): Promise<ApiResponse<T>> => {
-  const response: Response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api${url}`,
-    {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+    const response: Response = await fetch(`${baseUrl}/api${url}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
+      signal: controller.signal,
       ...options,
       credentials: "include",
-    },
-  );
-  const responseBody: ApiBody<T> = await response.json();
-  return {
-    ...responseBody,
-    status: response.status,
-    statusText: response.statusText,
-    url: response.url,
-    ok: response.ok,
-    headers: response.headers,
-  } as ApiResponse<T>;
+    });
+    clearTimeout(timeoutId);
+    const responseBody: ApiBody<T> = await response.json();
+    return {
+      ...responseBody,
+      status: response.status,
+      statusText: response.statusText,
+      url: response.url,
+      ok: response.ok,
+      headers: response.headers,
+    } as ApiResponse<T>;
+  } catch (err: unknown) {
+    return {
+      success: false,
+      message: (err as Error).message || "Network request failed",
+      status: 500,
+      statusText: "Error",
+      url: `${baseUrl}/api${url}`,
+      ok: false,
+      headers: new Headers(),
+    } as ApiResponse<T>;
+  }
 };
 
-export const post = async <T, U>(
+export const post = async <T, U = unknown>(
   url: string,
   body?: U,
   options?: RequestInit,
@@ -66,7 +81,7 @@ export const post = async <T, U>(
   } as ApiResponse<T>;
 };
 
-export const put = async <T, U>(
+export const put = async <T, U = unknown>(
   url: string,
   body: U,
   options?: RequestInit,
@@ -94,7 +109,7 @@ export const put = async <T, U>(
   } as ApiResponse<T>;
 };
 
-export const patch = async <T, U>(
+export const patch = async <T, U = unknown>(
   url: string,
   body: U,
   options?: RequestInit,
