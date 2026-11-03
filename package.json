@@ -1,0 +1,24 @@
+{
+  "name": "next-express",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "typecheck": "turbo run typecheck",
+    "db:up": "docker-compose -f docker-compose.dev.yml up -d --wait db",
+    "db:down": "docker compose -f docker-compose.dev.yml down",
+    "predev": "pnpm db:up"
+  },
+  "devDependencies": {
+    "prettier": "3.9.6",
+    "turbo": "^2.11.10",
+    "typescript": "7.0.2"
+  },
+  "packageManager": "pnpm@12.4.2",
+  "engines": {
+    "node": ">=24"
+  }
+}
