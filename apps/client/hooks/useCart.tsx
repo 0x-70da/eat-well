@@ -1,40 +1,17 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  useCartStore,
+  type CartItem,
+  type CartItemOption,
+  type CartItemSize,
+} from "@/stores/cart.store";
 import type { ValidateCouponResult } from "@workspace/types";
 
-export interface CartItemOption {
-  groupId?: string;
-  groupName?: string;
-  itemId?: string;
-  name: string;
-  nameAr: string;
-  price: number;
-}
+export type { CartItem, CartItemOption, CartItemSize };
 
-export interface CartItemSize {
-  sizeId?: string;
-  name: string;
-  nameAr: string;
-  priceAdjustment: number;
-}
-
-export interface CartItem {
-  id: string; // composite key
-  productId: string;
-  name: string;
-  nameAr: string;
-  image: string;
-  basePrice: number;
-  unitPrice: number;
-  quantity: number;
-  selectedSize?: CartItemSize | null;
-  selectedAddons?: CartItemOption[];
-  specialInstructions?: string;
-  totalPrice: number;
-}
-
-interface CartContextType {
+export interface CartContextValue {
   items: CartItem[];
   addItem: (
     product: {
@@ -62,182 +39,66 @@ interface CartContextType {
   totalItems: number;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
+  isLoaded: boolean;
 }
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+export function useCart(): CartContextValue {
+  const [isClient, setIsClient] = useState(false);
+  const items = useCartStore((state) => state.items);
+  const appliedCoupon = useCartStore((state) => state.appliedCoupon);
+  const isCartOpen = useCartStore((state) => state.isCartOpen);
+  const addItem = useCartStore((state) => state.addItem);
+  const removeItem = useCartStore((state) => state.removeItem);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const clearCart = useCartStore((state) => state.clearCart);
+  const applyCoupon = useCartStore((state) => state.applyCoupon);
+  const removeCoupon = useCartStore((state) => state.removeCoupon);
+  const setIsCartOpen = useCartStore((state) => state.setIsCartOpen);
 
-const CART_STORAGE_KEY = "eatwell_cart_v1";
-
-export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [appliedCoupon, setAppliedCoupon] = useState<ValidateCouponResult | null>(null);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  // Load from localStorage on mount
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(CART_STORAGE_KEY);
-      if (stored) {
-        setItems(JSON.parse(stored));
-      }
-    } catch (e) {
-      console.error("Failed to load cart from storage:", e);
-    } finally {
-      setIsLoaded(true);
-    }
+    setIsClient(true);
   }, []);
 
-  // Save to localStorage on change
-  useEffect(() => {
-    if (!isLoaded) return;
-    try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-    } catch (e) {
-      console.error("Failed to save cart to storage:", e);
-    }
-  }, [items, isLoaded]);
+  const safeItems = isClient ? items : [];
+  const safeCoupon = isClient ? appliedCoupon : null;
 
-  const addItem: CartContextType["addItem"] = (
-    product,
-    quantity,
-    size = null,
-    addons = [],
-    instructions = "",
-  ) => {
-    const baseP = Number(product.price);
-    const sizeAdj = size ? Number(size.priceAdjustment) : 0;
-    const addonsTotal = (addons || []).reduce(
-      (sum, a) => sum + Number(a.price || 0),
-      0,
-    );
-    const unitPrice = baseP + sizeAdj + addonsTotal;
-
-    // Generate unique composite ID
-    const addonKey = (addons || [])
-      .map((a) => a.itemId || a.name)
-      .sort()
-      .join("-");
-    const compositeId = `${product.id}_${size?.sizeId || "default"}_${addonKey}`;
-
-    setItems((prev) => {
-      const existingIdx = prev.findIndex((i) => i.id === compositeId);
-      if (existingIdx > -1) {
-        const updated = [...prev];
-        const existing = updated[existingIdx]!;
-        const newQty = existing.quantity + quantity;
-        updated[existingIdx] = {
-          ...existing,
-          quantity: newQty,
-          totalPrice: unitPrice * newQty,
-          specialInstructions: instructions || existing.specialInstructions,
-        };
-        return updated;
-      }
-
-      return [
-        ...prev,
-        {
-          id: compositeId,
-          productId: product.id,
-          name: product.name,
-          nameAr: product.nameAr,
-          image: product.image,
-          basePrice: baseP,
-          unitPrice,
-          quantity,
-          selectedSize: size,
-          selectedAddons: addons,
-          specialInstructions: instructions,
-          totalPrice: unitPrice * quantity,
-        },
-      ];
-    });
-
-    setIsCartOpen(true);
-  };
-
-  const removeItem = (itemId: string) => {
-    setItems((prev) => prev.filter((i) => i.id !== itemId));
-  };
-
-  const updateQuantity = (itemId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeItem(itemId);
-      return;
-    }
-    setItems((prev) =>
-      prev.map((i) =>
-        i.id === itemId
-          ? {
-              ...i,
-              quantity,
-              totalPrice: i.unitPrice * quantity,
-            }
-          : i,
-      ),
-    );
-  };
-
-  const clearCart = () => {
-    setItems([]);
-    setAppliedCoupon(null);
-  };
-
-  const applyCoupon = (coupon: ValidateCouponResult) => {
-    setAppliedCoupon(coupon);
-  };
-
-  const removeCoupon = () => {
-    setAppliedCoupon(null);
-  };
-
-  // Calculations
-  const subtotal = items.reduce((acc, i) => acc + i.totalPrice, 0);
+  const subtotal = safeItems.reduce((acc, i) => acc + i.totalPrice, 0);
 
   let discountAmount = 0;
-  if (appliedCoupon && subtotal > 0) {
-    if (appliedCoupon.discountType === "percentage") {
-      discountAmount = (subtotal * appliedCoupon.discountValue) / 100;
+  if (safeCoupon && subtotal > 0) {
+    if (safeCoupon.discountType === "percentage") {
+      discountAmount = (subtotal * safeCoupon.discountValue) / 100;
     } else {
-      discountAmount = Math.min(appliedCoupon.discountValue, subtotal);
+      discountAmount = Math.min(safeCoupon.discountValue, subtotal);
     }
     discountAmount = Math.round(discountAmount * 100) / 100;
   }
 
   const deliveryFee = subtotal > 0 ? 30 : 0;
   const totalAmount = Math.max(0, subtotal - discountAmount + deliveryFee);
-  const totalItems = items.reduce((acc, i) => acc + i.quantity, 0);
+  const totalItems = safeItems.reduce((acc, i) => acc + i.quantity, 0);
 
-  return (
-    <CartContext.Provider
-      value={{
-        items,
-        addItem,
-        removeItem,
-        updateQuantity,
-        clearCart,
-        subtotal,
-        appliedCoupon,
-        applyCoupon,
-        removeCoupon,
-        discountAmount,
-        deliveryFee,
-        totalAmount,
-        totalItems,
-        isCartOpen,
-        setIsCartOpen,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
-  );
+  return {
+    items: safeItems,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    subtotal,
+    appliedCoupon: safeCoupon,
+    applyCoupon,
+    removeCoupon,
+    discountAmount,
+    deliveryFee,
+    totalAmount,
+    totalItems,
+    isCartOpen,
+    setIsCartOpen,
+    isLoaded: isClient,
+  };
 }
 
-export function useCart() {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error("useCart must be used within a CartProvider");
-  }
-  return context;
+// Retain Provider component for backward compatibility without breaking layout trees
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
 }

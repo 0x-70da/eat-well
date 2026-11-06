@@ -24,15 +24,12 @@ export function Footer() {
                 <span className="text-xl font-black tracking-tight block">
                   إيت ويل
                 </span>
-                <span className="text-[10px] text-muted-foreground block -mt-1 font-medium">
-                  EAT WELL RESTAURANT
-                </span>
               </div>
             </Link>
             <p className="text-xs text-muted-foreground leading-relaxed">
               نقدم لكم تجربة طعام شرقية فاخرة بنكهات المشاوي على الفحم والشاورما
-              الأصلية، مع التزام تام بأعلى معايير النظافة واستخدام اللحوم البلدية
-              الطازجة يومياً.
+              الأصلية، مع التزام تام بأعلى معايير النظافة واستخدام اللحوم
+              البلدية الطازجة يومياً.
             </p>
             <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
               <ShieldCheck className="w-4 h-4" />
@@ -45,7 +42,10 @@ export function Footer() {
             <h3 className="text-sm font-bold tracking-tight">روابط سريعة</h3>
             <ul className="space-y-2 text-xs text-muted-foreground">
               <li>
-                <Link href="/menu" className="hover:text-primary transition-colors">
+                <Link
+                  href="/menu"
+                  className="hover:text-primary transition-colors"
+                >
                   قائمة الطعام الكاملة
                 </Link>
               </li>
@@ -66,17 +66,26 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="hover:text-primary transition-colors">
+                <Link
+                  href="/about"
+                  className="hover:text-primary transition-colors"
+                >
                   من نحن وقصة المطعم
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-primary transition-colors">
+                <Link
+                  href="/contact"
+                  className="hover:text-primary transition-colors"
+                >
                   اتصل بنا والاستفسارات
                 </Link>
               </li>
               <li>
-                <Link href="/faq" className="hover:text-primary transition-colors">
+                <Link
+                  href="/faq"
+                  className="hover:text-primary transition-colors"
+                >
                   الأسئلة الشائعة (FAQ)
                 </Link>
               </li>
@@ -85,7 +94,9 @@ export function Footer() {
 
           {/* Operating Hours */}
           <div className="space-y-3">
-            <h3 className="text-sm font-bold tracking-tight">أوقات العمل والتوصيل</h3>
+            <h3 className="text-sm font-bold tracking-tight">
+              أوقات العمل والتوصيل
+            </h3>
             <div className="space-y-2.5 text-xs text-muted-foreground">
               <div className="flex items-start gap-2">
                 <Clock className="w-4 h-4 text-primary shrink-0 mt-0.5" />
@@ -107,15 +118,21 @@ export function Footer() {
 
           {/* Contact & Branch */}
           <div className="space-y-3">
-            <h3 className="text-sm font-bold tracking-tight">العنوان والتواصل</h3>
+            <h3 className="text-sm font-bold tracking-tight">
+              العنوان والتواصل
+            </h3>
             <ul className="space-y-2.5 text-xs text-muted-foreground">
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                <span>شارع النصر، المعادي الجديدة، القاهرة، جمهورية مصر العربية</span>
+                <span>
+                  شارع النصر، المعادي الجديدة، القاهرة، جمهورية مصر العربية
+                </span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-primary shrink-0" />
-                <span dir="ltr" className="font-mono">+20 100 000 0000</span>
+                <span dir="ltr" className="font-mono">
+                  +20 100 000 0000
+                </span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-primary shrink-0" />
@@ -131,7 +148,10 @@ export function Footer() {
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
               <CreditCard className="w-4 h-4" />
-              <span>دفع آمن: كاش عند الاستلام • فيزا / ماستركارد • فودافون كاش / انستاباي</span>
+              <span>
+                دفع آمن: كاش عند الاستلام • فيزا / ماستركارد • فودافون كاش /
+                انستاباي
+              </span>
             </span>
           </div>
         </div>

@@ -5,6 +5,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/hooks/useCart";
 import { ThemeToggle } from "@/components/helper-components/ThemeToggle";
+import { UserNav } from "@/components/layout/UserNav";
+import { useSession } from "@/requests/useSession";
+import { logout } from "@/requests/logout";
+import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
 import {
   Flame,
@@ -28,13 +32,22 @@ const NAV_LINKS = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { totalItems, setIsCartOpen } = useCart();
+  const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleMobileLogout = async () => {
+    setMobileMenuOpen(false);
+    await logout();
+    router.push("/");
+    router.refresh();
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-md transition-all">
       {/* Top micro banner */}
-      <div className="bg-primary text-primary-foreground text-[11px] font-semibold py-1 px-4 text-center hidden sm:flex items-center justify-center gap-3">
+      {/* <div className="bg-primary text-primary-foreground text-[11px] font-semibold py-1 px-4 text-center hidden sm:flex items-center justify-center gap-3">
         <span className="flex items-center gap-1.5">
           <Clock className="w-3.5 h-3.5" />
           <span>توصيل سريع ساخن خلال 30-45 دقيقة في جميع أنحاء القاهرة</span>
@@ -44,7 +57,7 @@ export function Navbar() {
           <PhoneCall className="w-3.5 h-3.5" />
           <span>للطلبات المباشرة: +20 100 000 0000</span>
         </span>
-      </div>
+      </div> */}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
         {/* Brand */}
@@ -54,7 +67,11 @@ export function Navbar() {
             className="md:hidden p-2 rounded-lg text-muted-foreground hover:bg-muted cursor-pointer"
             aria-label="القائمة"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileMenuOpen ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
           </button>
 
           <Link href="/" className="flex items-center gap-2.5 group">
@@ -64,9 +81,6 @@ export function Navbar() {
             <div>
               <span className="text-xl font-black tracking-tight block text-foreground">
                 إيت ويل
-              </span>
-              <span className="text-[10px] text-muted-foreground block -mt-1 font-medium">
-                EAT WELL RESTAURANT
               </span>
             </div>
           </Link>
@@ -109,6 +123,9 @@ export function Navbar() {
 
           <ThemeToggle />
 
+          {/* User Authentication Menu */}
+          <UserNav />
+
           {/* Cart Trigger Button */}
           <Button
             onClick={() => setIsCartOpen(true)}
@@ -139,7 +156,49 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
-          <div className="pt-2 border-t border-border">
+          <div className="pt-2 border-t border-border space-y-1">
+            {session?.user ? (
+              <>
+                <Link
+                  href="/account"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-foreground font-semibold rounded-lg hover:bg-muted"
+                >
+                  <span>الملف الشخصي ({session.user.name})</span>
+                </Link>
+                <Link
+                  href="/orders"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-foreground font-semibold rounded-lg hover:bg-muted"
+                >
+                  <ShoppingBag className="w-4 h-4 text-primary" />
+                  <span>طلباتي السابقة</span>
+                </Link>
+                <button
+                  onClick={handleMobileLogout}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive font-semibold rounded-lg hover:bg-destructive/10 text-right cursor-pointer"
+                >
+                  <span>تسجيل الخروج</span>
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center gap-2 pt-1">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 text-center py-2 text-xs font-bold bg-primary text-primary-foreground rounded-xl"
+                >
+                  تسجيل الدخول
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 text-center py-2 text-xs font-bold border border-border rounded-xl hover:bg-muted"
+                >
+                  حساب جديد
+                </Link>
+              </div>
+            )}
             <Link
               href="/orders/track"
               onClick={() => setMobileMenuOpen(false)}
