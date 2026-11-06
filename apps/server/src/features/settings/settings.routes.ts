@@ -1,8 +1,6 @@
 import { Router } from "express";
-import {
-  getSettingsController,
-  updateSettingsController,
-} from "./controllers/settings.controller.js";
+import { getSettingsController } from "./controllers/getSettings.controller.js";
+import { updateSettingsController } from "./controllers/updateSettings.controller.js";
 import { adminMiddleware } from "../../middlewares/admin.middleware.js";
 
 const router: Router = Router();

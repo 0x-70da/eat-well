@@ -43,6 +43,11 @@ router.use(
 );
 
 router.use(
+  "/users",
+  (await import("./features/users/users.routes.js")).default,
+);
+
+router.use(
   "/addresses",
   (await import("./features/addresses/addresses.routes.js")).default,
 );
@@ -52,9 +57,6 @@ router.use(
   (await import("./features/reviews/reviews.routes.js")).default,
 );
 
-router.use(
-  "/seed",
-  (await import("./features/seed/seed.routes.js")).default,
-);
+router.use("/seed", (await import("./features/seed/seed.routes.js")).default);
 
 export default router;

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getDashboardStatsController } from "./controllers/analytics.controller.js";
+import { getDashboardStatsController } from "./controllers/getDashboardStats.controller.js";
 import { adminMiddleware } from "../../middlewares/admin.middleware.js";
 
 const router: Router = Router();

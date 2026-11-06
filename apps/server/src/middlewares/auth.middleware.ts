@@ -17,6 +17,10 @@ export const authMiddleware = async (
     return error(res, "Unauthorized", 401);
   }
 
+  if (session.user.banned) {
+    return error(res, "Your account has been banned", 403);
+  }
+
   res.locals.session = session;
   next();
 };

@@ -1,10 +1,8 @@
 import { Router } from "express";
-import {
-  getUserAddressesController,
-  createDeliveryAddressController,
-  updateDeliveryAddressController,
-  deleteDeliveryAddressController,
-} from "./controllers/address.controller.js";
+import { getUserAddressesController } from "./controllers/getUserAddresses.controller.js";
+import { createDeliveryAddressController } from "./controllers/createDeliveryAddress.controller.js";
+import { updateDeliveryAddressController } from "./controllers/updateDeliveryAddress.controller.js";
+import { deleteDeliveryAddressController } from "./controllers/deleteDeliveryAddress.controller.js";
 import { authMiddleware } from "../../middlewares/auth.middleware.js";
 
 const router: Router = Router();

@@ -1,8 +1,6 @@
 import { Router } from "express";
-import {
-  getCustomersController,
-  getCustomerByIdController,
-} from "./controllers/customer.controller.js";
+import { getCustomersController } from "./controllers/getCustomers.controller.js";
+import { getCustomerByIdController } from "./controllers/getCustomerById.controller.js";
 import { adminMiddleware } from "../../middlewares/admin.middleware.js";
 
 const router: Router = Router();

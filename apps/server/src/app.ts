@@ -5,6 +5,7 @@ import { errorHandler } from "./middlewares/error.middleware.js";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth.js";
 import { notFoundHandler } from "./middlewares/notFound.middleware.js";
+import { stripeWebhookController } from "./features/payments/controllers/stripeWebhook.controller.js";
 
 const allowedOrigins = [
   process.env.CLIENT_URL || "http://localhost:3000",
@@ -14,20 +15,15 @@ const allowedOrigins = [
 const app: express.Application = express();
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, or server-to-server)
-      if (!origin) return callback(null, true);
-      if (
-        allowedOrigins.includes(origin) ||
-        origin.startsWith("http://localhost:") ||
-        origin.startsWith("http://127.0.0.1:")
-      ) {
-        return callback(null, true);
-      }
-      return callback(null, true);
-    },
+    origin: allowedOrigins,
     credentials: true,
   }),
+);
+
+app.post(
+  "/api/payments/stripe/webhook",
+  express.raw({ type: "application/json" }),
+  stripeWebhookController,
 );
 
 app.all("/api/auth/*splat", toNodeHandler(auth));

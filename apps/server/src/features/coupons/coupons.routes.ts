@@ -1,11 +1,9 @@
 import { Router } from "express";
-import {
-  getCouponsController,
-  validateCouponController,
-  createCouponController,
-  updateCouponController,
-  deleteCouponController,
-} from "./controllers/coupon.controller.js";
+import { getCouponsController } from "./controllers/getCoupons.controller.js";
+import { validateCouponController } from "./controllers/validateCoupon.controller.js";
+import { createCouponController } from "./controllers/createCoupon.controller.js";
+import { updateCouponController } from "./controllers/updateCoupon.controller.js";
+import { deleteCouponController } from "./controllers/deleteCoupon.controller.js";
 import { adminMiddleware } from "../../middlewares/admin.middleware.js";
 
 const router: Router = Router();

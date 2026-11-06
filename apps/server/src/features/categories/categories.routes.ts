@@ -1,11 +1,9 @@
 import { Router } from "express";
-import {
-  getCategoriesController,
-  getCategoryByIdController,
-  createCategoryController,
-  updateCategoryController,
-  deleteCategoryController,
-} from "./controllers/category.controller.js";
+import { getCategoriesController } from "./controllers/getCategories.controller.js";
+import { getCategoryByIdController } from "./controllers/getCategoryById.controller.js";
+import { createCategoryController } from "./controllers/createCategory.controller.js";
+import { updateCategoryController } from "./controllers/updateCategory.controller.js";
+import { deleteCategoryController } from "./controllers/deleteCategory.controller.js";
 import { adminMiddleware } from "../../middlewares/admin.middleware.js";
 
 const router: Router = Router();

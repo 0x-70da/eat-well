@@ -1,13 +1,11 @@
 import { Router } from "express";
-import {
-  createOrderController,
-  trackOrderByNumberController,
-  getMyOrdersController,
-  getOrderByIdController,
-  getAdminOrdersController,
-  updateOrderStatusController,
-  updatePaymentStatusController,
-} from "./controllers/order.controller.js";
+import { createOrderController } from "./controllers/createOrder.controller.js";
+import { trackOrderByNumberController } from "./controllers/trackOrderByNumber.controller.js";
+import { getMyOrdersController } from "./controllers/getMyOrders.controller.js";
+import { getOrderByIdController } from "./controllers/getOrderById.controller.js";
+import { getAdminOrdersController } from "./controllers/getAdminOrders.controller.js";
+import { updateOrderStatusController } from "./controllers/updateOrderStatus.controller.js";
+import { updatePaymentStatusController } from "./controllers/updatePaymentStatus.controller.js";
 import { authMiddleware } from "../../middlewares/auth.middleware.js";
 import { adminMiddleware } from "../../middlewares/admin.middleware.js";
 
