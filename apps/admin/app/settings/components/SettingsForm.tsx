@@ -2,64 +2,63 @@
 
 import { useState } from "react";
 import type { RestaurantSettings } from "@workspace/types";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  updateSettingsSchema,
+  type UpdateSettingsInput,
+  type UpdateSettingsRawInput,
+} from "@workspace/validation";
 import { Button } from "@workspace/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
 import { updateAdminSettings } from "../requests/getSettings";
-import { Check, Save } from "lucide-react";
+import { Check, Save, Loader2 } from "lucide-react";
 
 export interface SettingsFormProps {
   settings: RestaurantSettings;
 }
 
 export function SettingsForm({ settings: initialSettings }: SettingsFormProps) {
-  const [settings, setSettings] = useState<RestaurantSettings>(initialSettings);
-  const [restaurantNameAr, setRestaurantNameAr] = useState(settings.restaurantNameAr);
-  const [restaurantName, setRestaurantName] = useState(settings.restaurantName);
-  const [sloganAr, setSloganAr] = useState(settings.sloganAr || "");
-  const [descriptionAr, setDescriptionAr] = useState(settings.descriptionAr || "");
-  const [phone, setPhone] = useState(settings.phone);
-  const [secondaryPhone, setSecondaryPhone] = useState(settings.secondaryPhone || "");
-  const [email, setEmail] = useState(settings.email || "");
-  const [addressAr, setAddressAr] = useState(settings.addressAr);
-  const [openingHour, setOpeningHour] = useState(settings.openingHour);
-  const [closingHour, setClosingHour] = useState(settings.closingHour);
-  const [deliveryFee, setDeliveryFee] = useState(settings.deliveryFee.toString());
-  const [minOrderAmount, setMinOrderAmount] = useState(settings.minOrderAmount.toString());
-  const [estimatedPrepTimeMinutes, setEstimatedPrepTimeMinutes] = useState(
-    settings.estimatedPrepTimeMinutes.toString(),
-  );
-  const [taxRate, setTaxRate] = useState(settings.taxRate.toString());
-  const [isDeliveryOpen, setIsDeliveryOpen] = useState(settings.isDeliveryOpen);
-  const [whatsappNumber, setWhatsappNumber] = useState(settings.whatsappNumber || "");
-
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<UpdateSettingsRawInput, unknown, UpdateSettingsInput>({
+    resolver: zodResolver(updateSettingsSchema),
+    defaultValues: {
+      restaurantNameAr: initialSettings.restaurantNameAr,
+      restaurantName: initialSettings.restaurantName,
+      sloganAr: initialSettings.sloganAr || "",
+      descriptionAr: initialSettings.descriptionAr || "",
+      phone: initialSettings.phone,
+      secondaryPhone: initialSettings.secondaryPhone || "",
+      email: initialSettings.email || "",
+      addressAr: initialSettings.addressAr,
+      openingHour: initialSettings.openingHour,
+      closingHour: initialSettings.closingHour,
+      deliveryFee: Number(initialSettings.deliveryFee),
+      minOrderAmount: Number(initialSettings.minOrderAmount),
+      estimatedPrepTimeMinutes: initialSettings.estimatedPrepTimeMinutes,
+      taxRate: Number(initialSettings.taxRate),
+      isDeliveryOpen: initialSettings.isDeliveryOpen,
+      whatsappNumber: initialSettings.whatsappNumber || "",
+    },
+  });
+
+  const onFormSubmit = async (data: UpdateSettingsInput) => {
     setIsSaving(true);
     setSavedSuccess(false);
     try {
-      const res = await updateAdminSettings({
-        restaurantNameAr,
-        restaurantName,
-        sloganAr,
-        descriptionAr,
-        phone,
-        secondaryPhone,
-        email,
-        addressAr,
-        openingHour,
-        closingHour,
-        deliveryFee: Number(deliveryFee),
-        minOrderAmount: Number(minOrderAmount),
-        estimatedPrepTimeMinutes: Number(estimatedPrepTimeMinutes),
-        taxRate: Number(taxRate),
-        isDeliveryOpen,
-        whatsappNumber,
-      });
-      if (res.success && res.data) {
-        setSettings(res.data);
+      const res = await updateAdminSettings(data);
+      if (res.success) {
         setSavedSuccess(true);
         setTimeout(() => setSavedSuccess(false), 3000);
       }
@@ -69,51 +68,70 @@ export function SettingsForm({ settings: initialSettings }: SettingsFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+    <form
+      onSubmit={handleSubmit(onFormSubmit)}
+      className="space-y-6 max-w-4xl"
+      noValidate
+    >
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-bold">الهوية والبيانات الأساسية</CardTitle>
+          <CardTitle className="text-base font-bold">
+            الهوية والبيانات الأساسية
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="font-semibold block mb-1">اسم المطعم بالعربية *</label>
+              <label className="font-semibold block mb-1">
+                اسم المطعم بالعربية *
+              </label>
               <input
                 type="text"
-                required
-                value={restaurantNameAr}
-                onChange={(e) => setRestaurantNameAr(e.target.value)}
+                {...register("restaurantNameAr")}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
               />
+              {errors.restaurantNameAr && (
+                <p className="text-xs text-destructive mt-1">
+                  {errors.restaurantNameAr.message}
+                </p>
+              )}
             </div>
             <div>
-              <label className="font-semibold block mb-1">اسم المطعم بالإنجليزية *</label>
+              <label className="font-semibold block mb-1">
+                اسم المطعم بالإنجليزية *
+              </label>
               <input
                 type="text"
-                required
-                value={restaurantName}
-                onChange={(e) => setRestaurantName(e.target.value)}
+                dir="ltr"
+                {...register("restaurantName")}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
               />
+              {errors.restaurantName && (
+                <p className="text-xs text-destructive mt-1">
+                  {errors.restaurantName.message}
+                </p>
+              )}
             </div>
           </div>
 
           <div>
-            <label className="font-semibold block mb-1">الشعار اللفظي (Slogan)</label>
+            <label className="font-semibold block mb-1">
+              الشعار اللفظي (Slogan)
+            </label>
             <input
               type="text"
-              value={sloganAr}
-              onChange={(e) => setSloganAr(e.target.value)}
+              {...register("sloganAr")}
               className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
             />
           </div>
 
           <div>
-            <label className="font-semibold block mb-1">نبذة عن المطعم (تظهر في الموقع الرئيسي)</label>
+            <label className="font-semibold block mb-1">
+              نبذة عن المطعم (تظهر في الموقع الرئيسي)
+            </label>
             <textarea
               rows={3}
-              value={descriptionAr}
-              onChange={(e) => setDescriptionAr(e.target.value)}
+              {...register("descriptionAr")}
               className="w-full rounded-md border border-input bg-background px-3 py-2"
             />
           </div>
@@ -122,35 +140,47 @@ export function SettingsForm({ settings: initialSettings }: SettingsFormProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-bold">معلومات التواصل والموقع</CardTitle>
+          <CardTitle className="text-base font-bold">
+            معلومات التواصل والموقع
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="font-semibold block mb-1">رقم الهاتف الرئيسي *</label>
+              <label className="font-semibold block mb-1">
+                رقم الهاتف الرئيسي *
+              </label>
               <input
                 type="text"
-                required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                dir="ltr"
+                {...register("phone")}
+                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 font-mono"
+              />
+              {errors.phone && (
+                <p className="text-xs text-destructive mt-1">
+                  {errors.phone.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="font-semibold block mb-1">
+                رقم الهاتف الثانوي
+              </label>
+              <input
+                type="text"
+                dir="ltr"
+                {...register("secondaryPhone")}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 font-mono"
               />
             </div>
             <div>
-              <label className="font-semibold block mb-1">رقم الهاتف الثانوي</label>
+              <label className="font-semibold block mb-1">
+                رقم الواتساب للطلبات
+              </label>
               <input
                 type="text"
-                value={secondaryPhone}
-                onChange={(e) => setSecondaryPhone(e.target.value)}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 font-mono"
-              />
-            </div>
-            <div>
-              <label className="font-semibold block mb-1">رقم الواتساب للطلبات</label>
-              <input
-                type="text"
-                value={whatsappNumber}
-                onChange={(e) => setWhatsappNumber(e.target.value)}
+                dir="ltr"
+                {...register("whatsappNumber")}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 font-mono"
               />
             </div>
@@ -158,23 +188,35 @@ export function SettingsForm({ settings: initialSettings }: SettingsFormProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="font-semibold block mb-1">البريد الإلكتروني الرسمي</label>
+              <label className="font-semibold block mb-1">
+                البريد الإلكتروني الرسمي
+              </label>
               <input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                dir="ltr"
+                {...register("email")}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
               />
+              {errors.email && (
+                <p className="text-xs text-destructive mt-1">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
             <div>
-              <label className="font-semibold block mb-1">عنوان المطعم بالعربية *</label>
+              <label className="font-semibold block mb-1">
+                عنوان المطعم بالعربية *
+              </label>
               <input
                 type="text"
-                required
-                value={addressAr}
-                onChange={(e) => setAddressAr(e.target.value)}
+                {...register("addressAr")}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
               />
+              {errors.addressAr && (
+                <p className="text-xs text-destructive mt-1">
+                  {errors.addressAr.message}
+                </p>
+              )}
             </div>
           </div>
         </CardContent>
@@ -182,7 +224,9 @@ export function SettingsForm({ settings: initialSettings }: SettingsFormProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-bold">مواعيد العمل والتوصيل</CardTitle>
+          <CardTitle className="text-base font-bold">
+            مواعيد العمل والتوصيل
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -190,8 +234,7 @@ export function SettingsForm({ settings: initialSettings }: SettingsFormProps) {
               <label className="font-semibold block mb-1">ساعة الفتح</label>
               <input
                 type="text"
-                value={openingHour}
-                onChange={(e) => setOpeningHour(e.target.value)}
+                {...register("openingHour")}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
                 placeholder="11:00 AM"
               />
@@ -200,8 +243,7 @@ export function SettingsForm({ settings: initialSettings }: SettingsFormProps) {
               <label className="font-semibold block mb-1">ساعة الإغلاق</label>
               <input
                 type="text"
-                value={closingHour}
-                onChange={(e) => setClosingHour(e.target.value)}
+                {...register("closingHour")}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
                 placeholder="02:00 AM"
               />
@@ -210,35 +252,51 @@ export function SettingsForm({ settings: initialSettings }: SettingsFormProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="font-semibold block mb-1">رسوم التوصيل الافتراضية (ج.م) *</label>
+              <label className="font-semibold block mb-1">
+                رسوم التوصيل الافتراضية (ج.م) *
+              </label>
               <input
                 type="number"
                 step="1"
-                required
-                value={deliveryFee}
-                onChange={(e) => setDeliveryFee(e.target.value)}
+                {...register("deliveryFee")}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
               />
+              {errors.deliveryFee && (
+                <p className="text-xs text-destructive mt-1">
+                  {errors.deliveryFee.message}
+                </p>
+              )}
             </div>
             <div>
-              <label className="font-semibold block mb-1">الحد الأدنى للطلب (ج.م) *</label>
+              <label className="font-semibold block mb-1">
+                الحد الأدنى للطلب (ج.م) *
+              </label>
               <input
                 type="number"
                 step="1"
-                required
-                value={minOrderAmount}
-                onChange={(e) => setMinOrderAmount(e.target.value)}
+                {...register("minOrderAmount")}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
               />
+              {errors.minOrderAmount && (
+                <p className="text-xs text-destructive mt-1">
+                  {errors.minOrderAmount.message}
+                </p>
+              )}
             </div>
             <div>
-              <label className="font-semibold block mb-1">متوسط وقت التحضير (دقيقة)</label>
+              <label className="font-semibold block mb-1">
+                متوسط وقت التحضير (دقيقة)
+              </label>
               <input
                 type="number"
-                value={estimatedPrepTimeMinutes}
-                onChange={(e) => setEstimatedPrepTimeMinutes(e.target.value)}
+                {...register("estimatedPrepTimeMinutes")}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
               />
+              {errors.estimatedPrepTimeMinutes && (
+                <p className="text-xs text-destructive mt-1">
+                  {errors.estimatedPrepTimeMinutes.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -246,11 +304,13 @@ export function SettingsForm({ settings: initialSettings }: SettingsFormProps) {
             <input
               type="checkbox"
               id="deliveryOpen"
-              checked={isDeliveryOpen}
-              onChange={(e) => setIsDeliveryOpen(e.target.checked)}
+              {...register("isDeliveryOpen")}
               className="w-4 h-4 rounded text-primary border-input cursor-pointer"
             />
-            <label htmlFor="deliveryOpen" className="font-semibold cursor-pointer">
+            <label
+              htmlFor="deliveryOpen"
+              className="font-semibold cursor-pointer"
+            >
               خدمة التوصيل مفعلة ومتاحة للطلبات الآن
             </label>
           </div>
@@ -266,7 +326,11 @@ export function SettingsForm({ settings: initialSettings }: SettingsFormProps) {
             </>
           ) : (
             <>
-              <Save className="w-4 h-4" />
+              {isSaving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
               <span>{isSaving ? "جاري الحفظ..." : "حفظ التغييرات"}</span>
             </>
           )}

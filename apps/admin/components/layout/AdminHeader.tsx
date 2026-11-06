@@ -1,9 +1,38 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ThemeToggle } from "../helper-components/ThemeToggle";
-import { Bell, ShieldCheck } from "lucide-react";
+import { ShieldCheck, LogOut, Loader2 } from "lucide-react";
+import { useAdminSession } from "@/requests/useAdminSession";
+import { logout } from "@/requests/logout";
+import { Button } from "@workspace/ui/components/button";
+
+const ROLE_LABELS: Record<string, string> = {
+  super_admin: "مدير عام",
+  admin: "مدير نظام",
+  manager: "مدير فرع",
+  order_manager: "مسؤول طلبات",
+  staff: "طاقم العمل",
+  user: "عميل",
+};
 
 export function AdminHeader() {
+  const router = useRouter();
+  const { session } = useAdminSession();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    await logout();
+    router.replace("/login");
+    router.refresh();
+  };
+
+  const userRole = session?.user?.role || "admin";
+  const roleLabel = ROLE_LABELS[userRole] || userRole;
+  const userName = session?.user?.name || "مدير النظام";
+
   return (
     <header className="h-16 border-b border-border bg-card/40 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-30">
       <div className="flex items-center gap-3">
@@ -23,10 +52,25 @@ export function AdminHeader() {
             <ShieldCheck className="w-4 h-4" />
           </div>
           <div className="text-right hidden sm:block">
-            <span className="text-xs font-semibold block leading-tight">مدير النظام</span>
-            <span className="text-[10px] text-muted-foreground block">مسؤول رئيسي</span>
+            <span className="text-xs font-semibold block leading-tight">{userName}</span>
+            <span className="text-[10px] text-muted-foreground block">{roleLabel}</span>
           </div>
         </div>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2 text-muted-foreground hover:text-destructive"
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          title="تسجيل الخروج"
+        >
+          {isLoggingOut ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <LogOut className="w-4 h-4" />
+          )}
+        </Button>
       </div>
     </header>
   );

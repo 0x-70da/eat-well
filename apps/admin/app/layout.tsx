@@ -3,8 +3,7 @@ import { Cairo } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/helper-components/ThemeProvider";
 import NextTopLoader from "nextjs-toploader";
-import { AdminSidebar } from "@/components/layout/AdminSidebar";
-import { AdminHeader } from "@/components/layout/AdminHeader";
+import { AdminShell } from "@/components/layout/AdminShell";
 import { cn } from "@workspace/ui/lib/utils";
 
 const cairo = Cairo({
@@ -38,13 +37,7 @@ export default function AdminRootLayout({
             showSpinner={false}
             shadow="0 0 10px #e1701a,0 0 5px #e1701a"
           />
-          <div className="flex min-h-screen w-full">
-            <AdminSidebar />
-            <div className="flex-1 flex flex-col min-w-0">
-              <AdminHeader />
-              <main className="flex-1 p-6 lg:p-8 overflow-y-auto">{children}</main>
-            </div>
-          </div>
+          <AdminShell>{children}</AdminShell>
         </ThemeProvider>
       </body>
     </html>

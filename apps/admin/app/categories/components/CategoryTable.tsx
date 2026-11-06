@@ -3,6 +3,13 @@
 import { useState } from "react";
 import type { Category } from "@workspace/types";
 import Image from "next/image";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  createCategorySchema,
+  type CreateCategoryInput,
+  type CreateCategoryRawInput,
+} from "@workspace/validation";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
@@ -14,45 +21,78 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table";
-import { Plus, Trash2, Edit, CheckCircle2, XCircle } from "lucide-react";
-import { createCategory, updateCategory, deleteCategory } from "../requests/createCategory";
+import {
+  Plus,
+  Trash2,
+  Edit,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+} from "lucide-react";
+import {
+  createCategory,
+  updateCategory,
+  deleteCategory,
+} from "../requests/createCategory";
 
 export interface CategoryTableProps {
   categories: Category[];
 }
 
-export function CategoryTable({ categories: initialCategories }: CategoryTableProps) {
+export function CategoryTable({
+  categories: initialCategories,
+}: CategoryTableProps) {
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-
-  const [name, setName] = useState("");
-  const [nameAr, setNameAr] = useState("");
-  const [slug, setSlug] = useState("");
-  const [descriptionAr, setDescriptionAr] = useState("");
-  const [image, setImage] = useState("");
-  const [sortOrder, setSortOrder] = useState("0");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors },
+  } = useForm<CreateCategoryRawInput, unknown, CreateCategoryInput>({
+    resolver: zodResolver(createCategorySchema),
+    defaultValues: {
+      name: "",
+      nameAr: "",
+      slug: "",
+      descriptionAr: "",
+      image:
+        "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80",
+      sortOrder: initialCategories.length + 1,
+      isActive: true,
+    },
+  });
 
   const openCreateModal = () => {
     setEditingCategory(null);
-    setName("");
-    setNameAr("");
-    setSlug("");
-    setDescriptionAr("");
-    setImage("https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80");
-    setSortOrder((categories.length + 1).toString());
+    reset({
+      name: "",
+      nameAr: "",
+      slug: "",
+      descriptionAr: "",
+      image:
+        "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80",
+      sortOrder: categories.length + 1,
+      isActive: true,
+    });
     setIsModalOpen(true);
   };
 
   const openEditModal = (c: Category) => {
     setEditingCategory(c);
-    setName(c.name);
-    setNameAr(c.nameAr);
-    setSlug(c.slug);
-    setDescriptionAr(c.descriptionAr || "");
-    setImage(c.image || "");
-    setSortOrder(c.sortOrder.toString());
+    reset({
+      name: c.name,
+      nameAr: c.nameAr,
+      slug: c.slug,
+      descriptionAr: c.descriptionAr || "",
+      image: c.image || "",
+      sortOrder: c.sortOrder,
+      isActive: c.isActive,
+    });
     setIsModalOpen(true);
   };
 
@@ -61,7 +101,9 @@ export function CategoryTable({ categories: initialCategories }: CategoryTablePr
     const res = await updateCategory(c.id, { isActive: updated });
     if (res.success) {
       setCategories((prev) =>
-        prev.map((item) => (item.id === c.id ? { ...item, isActive: updated } : item)),
+        prev.map((item) =>
+          item.id === c.id ? { ...item, isActive: updated } : item,
+        ),
       );
     }
   };
@@ -74,35 +116,21 @@ export function CategoryTable({ categories: initialCategories }: CategoryTablePr
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onFormSubmit = async (data: CreateCategoryInput) => {
     setIsSubmitting(true);
     try {
       if (editingCategory) {
-        const res = await updateCategory(editingCategory.id, {
-          name,
-          nameAr,
-          slug,
-          descriptionAr,
-          image,
-          sortOrder: Number(sortOrder),
-        });
+        const res = await updateCategory(editingCategory.id, data);
         if (res.success && res.data) {
           setCategories((prev) =>
-            prev.map((c) => (c.id === editingCategory.id ? (res.data as Category) : c)),
+            prev.map((c) =>
+              c.id === editingCategory.id ? (res.data as Category) : c,
+            ),
           );
           setIsModalOpen(false);
         }
       } else {
-        const res = await createCategory({
-          name,
-          nameAr,
-          slug,
-          descriptionAr,
-          image,
-          sortOrder: Number(sortOrder),
-          isActive: true,
-        });
+        const res = await createCategory(data);
         if (res.success && res.data) {
           setCategories((prev) => [...prev, res.data as Category]);
           setIsModalOpen(false);
@@ -155,7 +183,9 @@ export function CategoryTable({ categories: initialCategories }: CategoryTablePr
                         ) : null}
                       </div>
                       <div>
-                        <span className="font-bold text-xs block">{c.nameAr}</span>
+                        <span className="font-bold text-xs block">
+                          {c.nameAr}
+                        </span>
                         <span className="text-[11px] text-muted-foreground block">
                           {c.name}
                         </span>
@@ -219,12 +249,15 @@ export function CategoryTable({ categories: initialCategories }: CategoryTablePr
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <form
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onFormSubmit)}
             className="bg-card border border-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl"
+            noValidate
           >
             <div className="flex items-center justify-between border-b border-border pb-3">
               <h3 className="text-lg font-bold">
-                {editingCategory ? "تعديل بيانات التصنيف" : "إضافة تصنيف طعام جديد"}
+                {editingCategory
+                  ? "تعديل بيانات التصنيف"
+                  : "إضافة تصنيف طعام جديد"}
               </h3>
               <Button
                 type="button"
@@ -238,73 +271,109 @@ export function CategoryTable({ categories: initialCategories }: CategoryTablePr
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="font-semibold block mb-1">اسم التصنيف بالعربية *</label>
+                <label className="font-semibold block mb-1">
+                  اسم التصنيف بالعربية *
+                </label>
                 <input
                   type="text"
-                  required
-                  value={nameAr}
-                  onChange={(e) => {
-                    setNameAr(e.target.value);
-                    if (!editingCategory && !slug) {
-                      setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"));
-                    }
-                  }}
+                  {...register("nameAr", {
+                    onChange: (e) => {
+                      if (!editingCategory) {
+                        setValue(
+                          "slug",
+                          e.target.value.toLowerCase().replace(/\s+/g, "-"),
+                          {
+                            shouldValidate: true,
+                          },
+                        );
+                      }
+                    },
+                  })}
                   className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
                   placeholder="مثال: طواجن فخار"
                 />
+                {errors.nameAr && (
+                  <p className="text-xs text-destructive mt-1">
+                    {errors.nameAr.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="font-semibold block mb-1">اسم التصنيف بالإنجليزية *</label>
+                <label className="font-semibold block mb-1">
+                  اسم التصنيف بالإنجليزية *
+                </label>
                 <input
                   type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  dir="ltr"
+                  {...register("name")}
                   className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
                   placeholder="e.g. Clay Tagines"
                 />
+                {errors.name && (
+                  <p className="text-xs text-destructive mt-1">
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="font-semibold block mb-1">الرابط اللطيف (Slug) *</label>
+                <label className="font-semibold block mb-1">
+                  الرابط اللطيف (Slug) *
+                </label>
                 <input
                   type="text"
-                  required
-                  value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
+                  dir="ltr"
+                  {...register("slug")}
                   className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
                   placeholder="clay-tagines"
                 />
+                {errors.slug && (
+                  <p className="text-xs text-destructive mt-1">
+                    {errors.slug.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="font-semibold block mb-1">رابط صورة التصنيف (URL)</label>
+                <label className="font-semibold block mb-1">
+                  رابط صورة التصنيف (URL)
+                </label>
                 <input
                   type="url"
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
+                  dir="ltr"
+                  {...register("image")}
                   className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
                   placeholder="https://images.unsplash.com/..."
                 />
+                {errors.image && (
+                  <p className="text-xs text-destructive mt-1">
+                    {errors.image.message}
+                  </p>
+                )}
               </div>
 
               <div>
                 <label className="font-semibold block mb-1">ترتيب العرض</label>
                 <input
                   type="number"
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value)}
+                  {...register("sortOrder")}
                   className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
                 />
+                {errors.sortOrder && (
+                  <p className="text-xs text-destructive mt-1">
+                    {errors.sortOrder.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="font-semibold block mb-1">الوصف بالعربية</label>
+                <label className="font-semibold block mb-1">
+                  الوصف بالعربية
+                </label>
                 <textarea
                   rows={2}
-                  value={descriptionAr}
-                  onChange={(e) => setDescriptionAr(e.target.value)}
+                  {...register("descriptionAr")}
                   className="w-full rounded-md border border-input bg-background px-3 py-2"
                   placeholder="وصف مختصر للتصنيف..."
                 />
@@ -321,7 +390,14 @@ export function CategoryTable({ categories: initialCategories }: CategoryTablePr
                 إلغاء
               </Button>
               <Button type="submit" size="sm" disabled={isSubmitting}>
-                {isSubmitting ? "جاري الحفظ..." : "حفظ التصنيف"}
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 ml-1 animate-spin" />
+                    جاري الحفظ...
+                  </>
+                ) : (
+                  "حفظ التصنيف"
+                )}
               </Button>
             </div>
           </form>

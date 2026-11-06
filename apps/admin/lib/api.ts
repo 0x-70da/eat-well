@@ -12,6 +12,41 @@ export type ApiResponse<T> = ApiBody<T> & {
   headers: Headers;
 };
 
+async function getForwardedHeaders(existingHeaders?: HeadersInit): Promise<Record<string, string>> {
+  const headersObj: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (existingHeaders) {
+    if (existingHeaders instanceof Headers) {
+      existingHeaders.forEach((val, key) => {
+        headersObj[key] = val;
+      });
+    } else if (Array.isArray(existingHeaders)) {
+      for (const [key, val] of existingHeaders) {
+        headersObj[key] = val;
+      }
+    } else {
+      Object.assign(headersObj, existingHeaders);
+    }
+  }
+
+  if (typeof window === "undefined") {
+    try {
+      const { headers } = await import("next/headers");
+      const h = await headers();
+      const cookie = h.get("cookie");
+      if (cookie && !headersObj["cookie"]) {
+        headersObj["cookie"] = cookie;
+      }
+    } catch {
+      // In non-request context
+    }
+  }
+
+  return headersObj;
+}
+
 export const get = async <T>(
   url: string,
   options?: RequestInit,
@@ -19,14 +54,13 @@ export const get = async <T>(
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2500);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const headers = await getForwardedHeaders(options?.headers);
 
     const response: Response = await fetch(`${baseUrl}/api${url}`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      signal: controller.signal,
+      headers,
+      signal: options?.signal ?? controller.signal,
       ...options,
       credentials: "include",
     });
@@ -53,17 +87,17 @@ export const get = async <T>(
   }
 };
 
-export const post = async <T, U>(
+export const post = async <T, U = unknown>(
   url: string,
   body?: U,
   options?: RequestInit,
 ): Promise<ApiResponse<T>> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const headers = await getForwardedHeaders(options?.headers);
+
   const response: Response = await fetch(`${baseUrl}/api${url}`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     ...options,
     credentials: "include",
@@ -79,17 +113,17 @@ export const post = async <T, U>(
   } as ApiResponse<T>;
 };
 
-export const put = async <T, U>(
+export const put = async <T, U = unknown>(
   url: string,
   body: U,
   options?: RequestInit,
 ): Promise<ApiResponse<T>> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const headers = await getForwardedHeaders(options?.headers);
+
   const response: Response = await fetch(`${baseUrl}/api${url}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify(body),
     ...options,
     credentials: "include",
@@ -105,17 +139,17 @@ export const put = async <T, U>(
   } as ApiResponse<T>;
 };
 
-export const patch = async <T, U>(
+export const patch = async <T, U = unknown>(
   url: string,
   body: U,
   options?: RequestInit,
 ): Promise<ApiResponse<T>> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const headers = await getForwardedHeaders(options?.headers);
+
   const response: Response = await fetch(`${baseUrl}/api${url}`, {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify(body),
     ...options,
     credentials: "include",
@@ -136,11 +170,11 @@ export const del = async <T>(
   options?: RequestInit,
 ): Promise<ApiResponse<T>> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const headers = await getForwardedHeaders(options?.headers);
+
   const response: Response = await fetch(`${baseUrl}/api${url}`, {
     method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     ...options,
     credentials: "include",
   });
