@@ -9,7 +9,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc -b",
     "start": "node dist/server.js",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate ",
     "db:migrate": "drizzle-kit migrate ",
@@ -36,6 +36,7 @@
     "@workspace/types": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "drizzle-kit": "1.0.0-rc.4",
+    "eslint": "^9",
     "tsx": "^4.23.15"
   }
 }

@@ -37,3 +37,5 @@ export const nextJsConfig = [
   },
   pluginReactHooks.configs.flat.recommended,
 ];
+
+export default nextJsConfig;

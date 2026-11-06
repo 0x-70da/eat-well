@@ -1,8 +1,15 @@
 import globals from "globals";
-import { defineConfig } from "eslint/config";
-import base from "./base.js";
+import { config as baseConfig } from "./base.js";
 
-export default defineConfig([
-  ...base,
-  { languageOptions: { globals: globals.node } },
-]);
+export const nodeConfig = [
+  ...baseConfig,
+  {
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+];
+
+export default nodeConfig;
