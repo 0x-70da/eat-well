@@ -78,10 +78,12 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
   const {
     register: registerRole,
     handleSubmit: handleRoleSubmit,
+    reset: resetRole,
     formState: { errors: roleErrors },
   } = useForm<UpdateUserRoleInput>({
     resolver: zodResolver(updateUserRoleSchema),
     defaultValues: {
+      userId: "",
       role: "user",
     },
   });
@@ -118,6 +120,10 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
 
   const openRoleModal = (u: ManagedUser) => {
     setActionError(null);
+    resetRole({
+      userId: u.id,
+      role: u.role,
+    });
     setRoleModalUser(u);
   };
 
@@ -127,6 +133,7 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
     setActionError(null);
     try {
       const res = await updateUserRole(roleModalUser.id, data);
+      console.log("updateUserRole response:", res);
       if (!res.success) {
         setActionError(res.message || "فشل تحديث الصلاحية");
         return;
@@ -148,8 +155,8 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
     resetBan({
       userId: u.id,
       banned: !u.banned,
-      banReason: u.banned ? "" : "مخالفة شروط الاستخدام",
-      banExpiresInDays: 7,
+      banReason: u.banned ? undefined : "مخالفة شروط الاستخدام",
+      banExpiresInDays: u.banned ? undefined : 7,
     });
   };
 
@@ -159,6 +166,7 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
     setActionError(null);
     try {
       const res = await banUser(banModalUser.id, data);
+      console.log("banUser response:", res);
       if (!res.success) {
         setActionError(res.message || "فشل تنفيذ العملية");
         return;
@@ -464,7 +472,6 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
               </label>
               <select
                 {...registerRole("role")}
-                defaultValue={roleModalUser.role}
                 className="w-full h-9 rounded-md border border-input bg-background px-3 text-xs"
               >
                 <option value="user">عميل (مستخدم عادي)</option>

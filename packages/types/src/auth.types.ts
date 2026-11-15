@@ -32,7 +32,7 @@ export interface ManagedUser {
   name: string;
   email: string;
   emailVerified: boolean;
-  role: UserRole | string;
+  role: UserRole;
   banned: boolean;
   banReason?: string | null;
   banExpires?: string | null;

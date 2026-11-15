@@ -9,7 +9,6 @@ export const handleStripeWebhookService = async (
 ) => {
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
   let event: Stripe.Event;
-
   try {
     const sig = Array.isArray(signature) ? signature[0] : signature;
     if (endpointSecret && sig) {

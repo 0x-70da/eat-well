@@ -28,13 +28,7 @@ app.post(
 
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
-app.use(
-  express.json({
-    verify: (req, _res, buf) => {
-      (req as unknown as { rawBody?: Buffer }).rawBody = buf;
-    },
-  }),
-);
+app.use(express.json());
 
 app.use("/api", router);
 
