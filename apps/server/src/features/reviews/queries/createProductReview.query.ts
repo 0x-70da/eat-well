@@ -5,10 +5,7 @@ import { nullToUndefined } from "../../../lib/nullToUndefined.js";
 import type { CreateReviewInput } from "@workspace/validation";
 import crypto from "crypto";
 
-export const createProductReviewQuery = async (
-  data: CreateReviewInput,
-  userId?: string | null,
-) => {
+export const createProductReviewQuery = async (data: CreateReviewInput, userId?: string | null) => {
   const id = `rev_${crypto.randomUUID().replace(/-/g, "").slice(0, 10)}`;
 
   const [created] = await db
@@ -31,12 +28,7 @@ export const createProductReviewQuery = async (
       count: sql<number>`count(*)`,
     })
     .from(productReviews)
-    .where(
-      and(
-        eq(productReviews.productId, data.productId),
-        eq(productReviews.isApproved, true),
-      ),
-    );
+    .where(and(eq(productReviews.productId, data.productId), eq(productReviews.isApproved, true)));
 
   if (stats) {
     const avg = Number(stats.avgRating || 5).toFixed(2);

@@ -1,24 +1,14 @@
 import { db } from "../../../db/index.js";
-import {
-  orders,
-  orderItems,
-  orderStatusHistory,
-  payments,
-} from "../../../db/schema.js";
+import { orders, orderItems, orderStatusHistory, payments } from "../../../db/schema.js";
 import { inArray, desc } from "drizzle-orm";
 import { nullToUndefined } from "../../../lib/nullToUndefined.js";
 
-export const attachOrderRelations = async (
-  orderRows: (typeof orders.$inferSelect)[],
-) => {
+export const attachOrderRelations = async (orderRows: (typeof orders.$inferSelect)[]) => {
   if (orderRows.length === 0) return [];
 
   const orderIds = orderRows.map((o) => o.id);
 
-  const itemsList = await db
-    .select()
-    .from(orderItems)
-    .where(inArray(orderItems.orderId, orderIds));
+  const itemsList = await db.select().from(orderItems).where(inArray(orderItems.orderId, orderIds));
 
   const historyList = await db
     .select()

@@ -17,10 +17,7 @@ import type { CreateOrderInput } from "@workspace/validation";
 import type { PreparedOrderItem, PreparedOrderData } from "../orders.types.js";
 import crypto from "crypto";
 
-export const createOrderService = async (
-  input: CreateOrderInput,
-  userId?: string | null,
-) => {
+export const createOrderService = async (input: CreateOrderInput, userId?: string | null) => {
   // 1. Fetch restaurant settings
   const settings = await fetchRestaurantSettings();
 
@@ -41,10 +38,7 @@ export const createOrderService = async (
       throw new AppError(`الوجبة برقم ${item.productId} غير متوفرة`, 404);
     }
     if (!dbProd.isAvailable) {
-      throw new AppError(
-        `الوجبة "${dbProd.nameAr}" غير متاحة حالياً للطلب`,
-        400,
-      );
+      throw new AppError(`الوجبة "${dbProd.nameAr}" غير متاحة حالياً للطلب`, 400);
     }
 
     const preparedItem = computeOrderItem(item, dbProd);
@@ -94,10 +88,7 @@ export const createOrderService = async (
   };
 
   // 10. Persist order with items
-  const createdOrder = await createOrderWithItemsQuery(
-    orderData,
-    preparedItems,
-  );
+  const createdOrder = await createOrderWithItemsQuery(orderData, preparedItems);
 
   // 11. Increment coupon usage if used
   if (validCouponCode) {
@@ -133,10 +124,7 @@ async function verifyAndHandleAddress(
       .select()
       .from(deliveryAddresses)
       .where(
-        and(
-          eq(deliveryAddresses.id, input.savedAddressId),
-          eq(deliveryAddresses.userId, userId),
-        ),
+        and(eq(deliveryAddresses.id, input.savedAddressId), eq(deliveryAddresses.userId, userId)),
       )
       .limit(1);
 
@@ -171,10 +159,7 @@ async function verifyAndHandleAddress(
 }
 
 async function validateAndFetchProducts(productIds: string[]) {
-  const dbProductsList = await db
-    .select()
-    .from(products)
-    .where(inArray(products.id, productIds));
+  const dbProductsList = await db.select().from(products).where(inArray(products.id, productIds));
 
   const dbSizes = await db
     .select()
@@ -326,10 +311,7 @@ function verifyMinimumOrder(subtotal: number, minOrderAmount: number) {
   }
 }
 
-async function applyCouponDiscount(
-  couponCode: string | null | undefined,
-  subtotal: number,
-) {
+async function applyCouponDiscount(couponCode: string | null | undefined, subtotal: number) {
   let discountAmount = 0;
   let validCouponCode: string | null = null;
 
@@ -342,10 +324,7 @@ async function applyCouponDiscount(
       discountAmount = couponResult.discountAmount;
       validCouponCode = couponResult.code;
     } catch {
-      throw new AppError(
-        `الكوبون "${couponCode}" غير صالح أو انتهت صلاحيته`,
-        400,
-      );
+      throw new AppError(`الكوبون "${couponCode}" غير صالح أو انتهت صلاحيته`, 400);
     }
   }
 

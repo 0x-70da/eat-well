@@ -1,3 +1,1 @@
-export type {
-  RestaurantSettings,
-} from "@workspace/types";
+export type { RestaurantSettings } from "@workspace/types";

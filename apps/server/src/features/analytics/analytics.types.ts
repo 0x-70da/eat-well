@@ -1,3 +1,1 @@
-export type {
-  DashboardStats,
-} from "@workspace/types";
+export type { DashboardStats } from "@workspace/types";

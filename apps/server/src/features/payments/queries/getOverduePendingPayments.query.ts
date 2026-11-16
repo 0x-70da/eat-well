@@ -3,9 +3,7 @@ import { payments, orders } from "../../../db/schema.js";
 import { and, eq, inArray, lte } from "drizzle-orm";
 import { nullToUndefined } from "../../../lib/nullToUndefined.js";
 
-export const getOverduePendingPaymentsQuery = async (
-  expirationMinutes = 30,
-) => {
+export const getOverduePendingPaymentsQuery = async (expirationMinutes = 30) => {
   const cutoffTime = new Date(Date.now() - expirationMinutes * 60 * 1000);
 
   const rows = await db

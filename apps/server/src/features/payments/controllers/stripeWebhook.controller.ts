@@ -13,8 +13,7 @@ export const stripeWebhookController = async (req: Request, res: Response) => {
     const result = await handleStripeWebhookService(req.body, sig);
     return success(res, "Webhook processed successfully", result, 200);
   } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Webhook processing failed";
+    const message = err instanceof Error ? err.message : "Webhook processing failed";
     return error(res, message, null, 400);
   }
 };

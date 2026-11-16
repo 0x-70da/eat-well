@@ -47,10 +47,7 @@ export const createPaymentIntentService = async (
     const stripe = getStripeInstance();
 
     if (!stripe) {
-      throw new AppError(
-        "وسيلة الدفع غير متاحة حاليًا. يرجى المحاولة لاحقًا.",
-        500,
-      );
+      throw new AppError("وسيلة الدفع غير متاحة حاليًا. يرجى المحاولة لاحقًا.", 500);
     }
 
     try {
@@ -82,10 +79,7 @@ export const createPaymentIntentService = async (
         currency: "EGP",
       };
     } catch (err: unknown) {
-      throw new AppError(
-        `خطأ في إنشاء عملية الدفع عبر Stripe: ${(err as Error).message}`,
-        500,
-      );
+      throw new AppError(`خطأ في إنشاء عملية الدفع عبر Stripe: ${(err as Error).message}`, 500);
     }
   }
 
@@ -115,21 +109,18 @@ export const createPaymentIntentService = async (
       }
 
       // Step B: Order Registration
-      const orderRes = await fetch(
-        "https://accept.paymob.com/api/ecommerce/orders",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            auth_token: authData.token,
-            delivery_needed: "false",
-            amount_cents: amountCents.toString(),
-            currency: "EGP",
-            merchant_order_id: orderRecord.orderNumber,
-            items: [],
-          }),
-        },
-      );
+      const orderRes = await fetch("https://accept.paymob.com/api/ecommerce/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          auth_token: authData.token,
+          delivery_needed: "false",
+          amount_cents: amountCents.toString(),
+          currency: "EGP",
+          merchant_order_id: orderRecord.orderNumber,
+          items: [],
+        }),
+      });
       const orderData = (await orderRes.json()) as { id: number };
       if (!orderData.id) {
         throw new Error("فشل إنشاء الطلب في بوابة Paymob");
@@ -138,11 +129,9 @@ export const createPaymentIntentService = async (
       // Determine Integration ID based on payment sub-method
       let integrationId = process.env.PAYMOB_CARD_INTEGRATION_ID;
       if (input.paymobMethod === "vodafone_cash") {
-        integrationId =
-          process.env.PAYMOB_WALLET_INTEGRATION_ID || integrationId;
+        integrationId = process.env.PAYMOB_WALLET_INTEGRATION_ID || integrationId;
       } else if (input.paymobMethod === "instapay") {
-        integrationId =
-          process.env.PAYMOB_INSTAPAY_INTEGRATION_ID || integrationId;
+        integrationId = process.env.PAYMOB_INSTAPAY_INTEGRATION_ID || integrationId;
       }
 
       // Step C: Payment Key Request
@@ -150,36 +139,33 @@ export const createPaymentIntentService = async (
       const firstName = names[0] || "Customer";
       const lastName = names.slice(1).join(" ") || "Client";
 
-      const keyRes = await fetch(
-        "https://accept.paymob.com/api/acceptance/payment_keys",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            auth_token: authData.token,
-            amount_cents: amountCents.toString(),
-            expiration: 3600,
-            order_id: orderData.id,
-            billing_data: {
-              first_name: firstName,
-              last_name: lastName,
-              email: orderRecord.customerEmail || "customer@eatwell.com",
-              phone_number: orderRecord.customerPhone,
-              apartment: "NA",
-              floor: "NA",
-              street: orderRecord.deliveryAddress.slice(0, 50),
-              building: "NA",
-              shipping_method: "PKG",
-              postal_code: "11511",
-              city: "Cairo",
-              country: "EG",
-              state: "Cairo",
-            },
-            currency: "EGP",
-            integration_id: Number(integrationId) || 0,
-          }),
-        },
-      );
+      const keyRes = await fetch("https://accept.paymob.com/api/acceptance/payment_keys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          auth_token: authData.token,
+          amount_cents: amountCents.toString(),
+          expiration: 3600,
+          order_id: orderData.id,
+          billing_data: {
+            first_name: firstName,
+            last_name: lastName,
+            email: orderRecord.customerEmail || "customer@eatwell.com",
+            phone_number: orderRecord.customerPhone,
+            apartment: "NA",
+            floor: "NA",
+            street: orderRecord.deliveryAddress.slice(0, 50),
+            building: "NA",
+            shipping_method: "PKG",
+            postal_code: "11511",
+            city: "Cairo",
+            country: "EG",
+            state: "Cairo",
+          },
+          currency: "EGP",
+          integration_id: Number(integrationId) || 0,
+        }),
+      });
       const keyData = (await keyRes.json()) as { token: string };
 
       if (!keyData.token) {
@@ -188,20 +174,17 @@ export const createPaymentIntentService = async (
 
       // If mobile wallet (Vodafone Cash, etc.) and phone number provided
       if (input.paymobMethod === "vodafone_cash" && input.walletMobileNumber) {
-        const payRes = await fetch(
-          "https://accept.paymob.com/api/acceptance/payments/pay",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              source: {
-                identifier: input.walletMobileNumber,
-                subtype: "WALLET",
-              },
-              payment_token: keyData.token,
-            }),
-          },
-        );
+        const payRes = await fetch("https://accept.paymob.com/api/acceptance/payments/pay", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            source: {
+              identifier: input.walletMobileNumber,
+              subtype: "WALLET",
+            },
+            payment_token: keyData.token,
+          }),
+        });
         const payData = (await payRes.json()) as {
           redirect_url?: string;
           iframe_redirection_url?: string;

@@ -25,9 +25,7 @@ export const getCategoriesQuery = async (onlyActive = true) => {
     .groupBy(categories.id)
     .orderBy(asc(categories.sortOrder));
 
-  const result = await (onlyActive
-    ? query.where(eq(categories.isActive, true))
-    : query);
+  const result = await (onlyActive ? query.where(eq(categories.isActive, true)) : query);
 
   return result.map((row) => nullToUndefined(row));
 };

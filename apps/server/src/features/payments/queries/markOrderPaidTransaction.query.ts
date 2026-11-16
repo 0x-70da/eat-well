@@ -15,11 +15,7 @@ export const markOrderPaidTransactionQuery = async (
 ) => {
   return await db.transaction(async (tx) => {
     // 1. Check if already marked paid (idempotency check)
-    const [existingOrder] = await tx
-      .select()
-      .from(orders)
-      .where(eq(orders.id, orderId))
-      .limit(1);
+    const [existingOrder] = await tx.select().from(orders).where(eq(orders.id, orderId)).limit(1);
 
     if (!existingOrder) {
       return null;
@@ -30,8 +26,7 @@ export const markOrderPaidTransactionQuery = async (
     }
 
     // 2. Update order paymentStatus to paid and status to confirmed if pending
-    const newStatus =
-      existingOrder.status === "pending" ? "confirmed" : existingOrder.status;
+    const newStatus = existingOrder.status === "pending" ? "confirmed" : existingOrder.status;
 
     const [updatedOrder] = await tx
       .update(orders)

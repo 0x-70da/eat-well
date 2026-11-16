@@ -13,7 +13,7 @@ export const banUserQuery = async (
     .update(user)
     .set({
       banned,
-      banReason: banned ? banReason ?? null : null,
+      banReason: banned ? (banReason ?? null) : null,
       banExpires: banned && banExpires ? new Date(banExpires) : null,
     })
     .where(eq(user.id, id))

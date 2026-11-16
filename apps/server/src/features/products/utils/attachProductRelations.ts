@@ -10,9 +10,7 @@ import {
 import { asc, inArray } from "drizzle-orm";
 import { nullToUndefined } from "../../../lib/nullToUndefined.js";
 
-export const attachProductRelations = async (
-  productRows: (typeof products.$inferSelect)[],
-) => {
+export const attachProductRelations = async (productRows: (typeof products.$inferSelect)[]) => {
   if (productRows.length === 0) return [];
 
   const productIds = productRows.map((p) => p.id);

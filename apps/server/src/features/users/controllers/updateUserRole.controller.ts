@@ -7,8 +7,7 @@ export const updateUserRoleController = async (req: Request, res: Response) => {
   const { id } = req.params;
   const validated = updateUserRoleSchema.parse(req.body);
 
-  const session = res.locals.session as
-    { user?: { id: string; role?: string } } | undefined;
+  const session = res.locals.session as { user?: { id: string; role?: string } } | undefined;
   if (!session?.user?.id) {
     return error(res, "غير مصرح", 401);
   }

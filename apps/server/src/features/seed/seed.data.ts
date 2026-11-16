@@ -5,8 +5,10 @@ export const SEED_CATEGORIES = [
     nameAr: "مشاوي على الفحم",
     slug: "charcoal-grills",
     description: "Best selection of authentic charcoal grilled kebabs, kofta, and shish tawook",
-    descriptionAr: "تشكيلة فاخرة من الكباب، الكفتة، والشيش طاووق المشوي على الفحم بتتبيلاتنا السرية",
-    image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80",
+    descriptionAr:
+      "تشكيلة فاخرة من الكباب، الكفتة، والشيش طاووق المشوي على الفحم بتتبيلاتنا السرية",
+    image:
+      "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80",
     sortOrder: 1,
   },
   {
@@ -16,7 +18,8 @@ export const SEED_CATEGORIES = [
     slug: "shawarma-sandwiches",
     description: "Traditional beef and chicken shawarma wrapped in freshly baked bread",
     descriptionAr: "شاورما اللحم والدجاج بالتتبيلة الأصلية والخبز الطازج مع صوص الثومية والطحينة",
-    image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=800&q=80",
     sortOrder: 2,
   },
   {
@@ -26,7 +29,8 @@ export const SEED_CATEGORIES = [
     slug: "tagines-main-dishes",
     description: "Slow-cooked authentic Oriental tagines and rice platters",
     descriptionAr: "طواجن فخار مطهوة ببطء مع أرز بسمتي بالخلطة والمكسرات المحمصة",
-    image: "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80",
     sortOrder: 3,
   },
   {
@@ -36,7 +40,8 @@ export const SEED_CATEGORIES = [
     slug: "appetizers-salads",
     description: "Hummus, baba ghanoush, grape leaves, and crisp salads",
     descriptionAr: "حمص، متبل، بابا غنوج، ورق عنب بدبس الرمان وسلطات طازجة منعشة",
-    image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80",
     sortOrder: 4,
   },
   {
@@ -46,7 +51,8 @@ export const SEED_CATEGORIES = [
     slug: "beverages",
     description: "Natural juices, mint lemonade, and hot oriental teas",
     descriptionAr: "عصائر طبيعية طازجة، ليمون بالنعناع، وشاي شرقي بالنعناع والميرمية",
-    image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80",
     sortOrder: 5,
   },
   {
@@ -56,7 +62,8 @@ export const SEED_CATEGORIES = [
     slug: "oriental-desserts",
     description: "Kunafa, baklava, and umm ali prepared with rich cream",
     descriptionAr: "كنافة نابلسية بالجبن، بقلاوة بالفستق، وأم علي بالمكسرات والقشطة البلدي",
-    image: "https://images.unsplash.com/photo-1579372786545-d24232daf58c?auto=format&fit=crop&w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1579372786545-d24232daf58c?auto=format&fit=crop&w=800&q=80",
     sortOrder: 6,
   },
 ];
@@ -67,12 +74,15 @@ export const SEED_PRODUCTS = [
     name: "Royal Mixed Grill Platter",
     nameAr: "مشكل مشاوي إيت ويل الملكي",
     slug: "royal-mixed-grill",
-    description: "A lavish platter of tender lamb chops, seasoned kofta, chicken shish tawook, and kebab served with basmati rice and grilled vegetables",
-    descriptionAr: "تشكيلة ملكية من ريش الضأن، كفتة مشوية، شيش طاووق، وكباب لحم يقدم مع الأرز البسمتي بالزعفران والخضار المشوي",
+    description:
+      "A lavish platter of tender lamb chops, seasoned kofta, chicken shish tawook, and kebab served with basmati rice and grilled vegetables",
+    descriptionAr:
+      "تشكيلة ملكية من ريش الضأن، كفتة مشوية، شيش طاووق، وكباب لحم يقدم مع الأرز البسمتي بالزعفران والخضار المشوي",
     price: 340,
     originalPrice: 380,
     categoryId: "cat_grills",
-    image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80",
     isAvailable: true,
     isFeatured: true,
     isPopular: true,
@@ -84,8 +94,18 @@ export const SEED_PRODUCTS = [
     spicyLevel: 1,
     sizes: [
       { name: "Single (1 Person)", nameAr: "فردي (1 فرد)", priceAdjustment: 0, isDefault: true },
-      { name: "Double (2 Persons)", nameAr: "مزدوج (2 أفراد)", priceAdjustment: 280, isDefault: false },
-      { name: "Family Feast (4 Persons)", nameAr: "وليمة عائلية (4 أفراد)", priceAdjustment: 680, isDefault: false },
+      {
+        name: "Double (2 Persons)",
+        nameAr: "مزدوج (2 أفراد)",
+        priceAdjustment: 280,
+        isDefault: false,
+      },
+      {
+        name: "Family Feast (4 Persons)",
+        nameAr: "وليمة عائلية (4 أفراد)",
+        priceAdjustment: 680,
+        isDefault: false,
+      },
     ],
     addonGroups: [
       {
@@ -108,7 +128,12 @@ export const SEED_PRODUCTS = [
         isRequired: false,
         items: [
           { name: "Extra Basmati Rice", nameAr: "أرز بسمتي إضافي", price: 35, isAvailable: true },
-          { name: "Grilled Veggies Skewer", nameAr: "سيخ خضار مشوي إضافي", price: 25, isAvailable: true },
+          {
+            name: "Grilled Veggies Skewer",
+            nameAr: "سيخ خضار مشوي إضافي",
+            price: 25,
+            isAvailable: true,
+          },
         ],
       },
     ],
@@ -118,12 +143,15 @@ export const SEED_PRODUCTS = [
     name: "Grilled Shish Tawook Plate",
     nameAr: "شيش طاووق بتتبيلة الليمون والزعتر",
     slug: "grilled-shish-tawook",
-    description: "Marinated chicken breast skewers grilled over wood fire, served with garlic cream dip, pickled turnips, and fresh pita bread",
-    descriptionAr: "صدور دجاج متبلة باللبن الزبادي والليمون والأعشاب، مشوية على الفحم مع التومية والمخللات والخبز الطازج",
+    description:
+      "Marinated chicken breast skewers grilled over wood fire, served with garlic cream dip, pickled turnips, and fresh pita bread",
+    descriptionAr:
+      "صدور دجاج متبلة باللبن الزبادي والليمون والأعشاب، مشوية على الفحم مع التومية والمخللات والخبز الطازج",
     price: 195,
     originalPrice: 220,
     categoryId: "cat_grills",
-    image: "https://images.unsplash.com/photo-1603360946369-dc9bb6258143?auto=format&fit=crop&w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1603360946369-dc9bb6258143?auto=format&fit=crop&w=800&q=80",
     isAvailable: true,
     isFeatured: true,
     isPopular: true,
@@ -134,8 +162,18 @@ export const SEED_PRODUCTS = [
     orderCount: 260,
     spicyLevel: 0,
     sizes: [
-      { name: "Regular (3 Skewers)", nameAr: "عادي (3 أسياخ)", priceAdjustment: 0, isDefault: true },
-      { name: "Large (5 Skewers)", nameAr: "كبير (5 أسياخ)", priceAdjustment: 90, isDefault: false },
+      {
+        name: "Regular (3 Skewers)",
+        nameAr: "عادي (3 أسياخ)",
+        priceAdjustment: 0,
+        isDefault: true,
+      },
+      {
+        name: "Large (5 Skewers)",
+        nameAr: "كبير (5 أسياخ)",
+        priceAdjustment: 90,
+        isDefault: false,
+      },
     ],
     addonGroups: [
       {
@@ -156,12 +194,15 @@ export const SEED_PRODUCTS = [
     name: "Arabic Beef Shawarma Platter",
     nameAr: "شاورما لحم عربي بالمكسرات",
     slug: "arabic-beef-shawarma",
-    description: "Sliced marinated prime beef shawarma in bite-sized toasted saj bread, served with tahini, french fries, and pickles",
-    descriptionAr: "شاورما لحم بلدي في خبز صاج محمص ومقطع قطع صغيرة مع البطاطس المقلية وصوص الطحينة والمخلل اللبناني",
+    description:
+      "Sliced marinated prime beef shawarma in bite-sized toasted saj bread, served with tahini, french fries, and pickles",
+    descriptionAr:
+      "شاورما لحم بلدي في خبز صاج محمص ومقطع قطع صغيرة مع البطاطس المقلية وصوص الطحينة والمخلل اللبناني",
     price: 180,
     originalPrice: null,
     categoryId: "cat_shawarma",
-    image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=800&q=80",
     isAvailable: true,
     isFeatured: true,
     isPopular: true,
@@ -183,7 +224,12 @@ export const SEED_PRODUCTS = [
         maxSelections: 2,
         isRequired: false,
         items: [
-          { name: "Melted Mozzarella", nameAr: "جبنة موزاريلا سايحة", price: 25, isAvailable: true },
+          {
+            name: "Melted Mozzarella",
+            nameAr: "جبنة موزاريلا سايحة",
+            price: 25,
+            isAvailable: true,
+          },
           { name: "Spicy Jalapenos", nameAr: "هالبينو حار", price: 15, isAvailable: true },
         ],
       },
@@ -194,12 +240,15 @@ export const SEED_PRODUCTS = [
     name: "Classic Chicken Shawarma Roll",
     nameAr: "ساندوتش شاورما دجاج سوبر",
     slug: "classic-chicken-shawarma",
-    description: "Tender chicken shawarma seasoned with cardamom and sumac, rolled with garlic sauce and cucumber pickles",
-    descriptionAr: "شاورما دجاج متبلة بالحبهان والسماق مع ثومية كريمية وخيار مخلل في خبز الشاورما اللذيذ",
+    description:
+      "Tender chicken shawarma seasoned with cardamom and sumac, rolled with garlic sauce and cucumber pickles",
+    descriptionAr:
+      "شاورما دجاج متبلة بالحبهان والسماق مع ثومية كريمية وخيار مخلل في خبز الشاورما اللذيذ",
     price: 95,
     originalPrice: 110,
     categoryId: "cat_shawarma",
-    image: "https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=800&q=80",
     isAvailable: true,
     isFeatured: false,
     isPopular: true,
@@ -211,7 +260,12 @@ export const SEED_PRODUCTS = [
     spicyLevel: 0,
     sizes: [
       { name: "Regular Size", nameAr: "حجم وسط", priceAdjustment: 0, isDefault: true },
-      { name: "Extra Large (Rocket)", nameAr: "حجم صاروخ كبير", priceAdjustment: 35, isDefault: false },
+      {
+        name: "Extra Large (Rocket)",
+        nameAr: "حجم صاروخ كبير",
+        priceAdjustment: 35,
+        isDefault: false,
+      },
     ],
   },
   {
@@ -219,12 +273,15 @@ export const SEED_PRODUCTS = [
     name: "Braised Lamb Shank Tagine",
     nameAr: "طاجن موزة ضأن بالبصل المكرمل",
     slug: "braised-lamb-shank-tagine",
-    description: "Slow-roasted tender lamb shank served over spiced yellow rice with roasted almonds and caramelized onions",
-    descriptionAr: "موزة ضأن بلدي مطهوة في الفرن لساعات حتى الذوبان، تقدم فوق أرز بالخلطة والمكسرات المحمصة",
+    description:
+      "Slow-roasted tender lamb shank served over spiced yellow rice with roasted almonds and caramelized onions",
+    descriptionAr:
+      "موزة ضأن بلدي مطهوة في الفرن لساعات حتى الذوبان، تقدم فوق أرز بالخلطة والمكسرات المحمصة",
     price: 360,
     originalPrice: 400,
     categoryId: "cat_tagines",
-    image: "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80",
     isAvailable: true,
     isFeatured: true,
     isPopular: true,
@@ -240,12 +297,15 @@ export const SEED_PRODUCTS = [
     name: "Hummus with Minced Beef & Pine Nuts",
     nameAr: "حمص باللحم والصنوبر المحمص",
     slug: "hummus-with-meat",
-    description: "Creamy chickpea hummus topped with spiced warm sauteed lamb, roasted pine nuts, and virgin olive oil",
-    descriptionAr: "حمص ناعم بزيت الزيتون البكر ومغطى باللحم المفروم المتبل والصنوبر الذهبي المقرمش",
+    description:
+      "Creamy chickpea hummus topped with spiced warm sauteed lamb, roasted pine nuts, and virgin olive oil",
+    descriptionAr:
+      "حمص ناعم بزيت الزيتون البكر ومغطى باللحم المفروم المتبل والصنوبر الذهبي المقرمش",
     price: 110,
     originalPrice: null,
     categoryId: "cat_appetizers",
-    image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80",
     isAvailable: true,
     isFeatured: false,
     isPopular: true,
@@ -261,12 +321,14 @@ export const SEED_PRODUCTS = [
     name: "Stuffed Grape Leaves (Yalanji)",
     nameAr: "ورق عنب بدبس الرمان والليمون",
     slug: "stuffed-grape-leaves",
-    description: "Tender vine leaves rolled with herb-infused rice, pomegranates, and extra virgin olive oil",
+    description:
+      "Tender vine leaves rolled with herb-infused rice, pomegranates, and extra virgin olive oil",
     descriptionAr: "ورق عنب طازج محشو بالأرز بالأعشاب ودبس الرمان الطبيعي وزيت الزيتون يقدم بارداً",
     price: 85,
     originalPrice: null,
     categoryId: "cat_appetizers",
-    image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
     isAvailable: true,
     isFeatured: false,
     isPopular: true,
@@ -282,12 +344,15 @@ export const SEED_PRODUCTS = [
     name: "Kunafa with Stretchy Akkawi Cheese",
     nameAr: "كنافة نابلسية بالجبن العكاوي الساخن",
     slug: "kunafa-nabulsia",
-    description: "Warm golden crispy pastry layered with sweet melted Akkawi cheese, drizzled with rose water syrup and ground pistachios",
-    descriptionAr: "كنافة مقرمشة باللون البرتقالي محشوة بجبن عكاوي أصلي غني تشد بالحرارة ومسقية بالشربات والفستق",
+    description:
+      "Warm golden crispy pastry layered with sweet melted Akkawi cheese, drizzled with rose water syrup and ground pistachios",
+    descriptionAr:
+      "كنافة مقرمشة باللون البرتقالي محشوة بجبن عكاوي أصلي غني تشد بالحرارة ومسقية بالشربات والفستق",
     price: 120,
     originalPrice: 140,
     categoryId: "cat_desserts",
-    image: "https://images.unsplash.com/photo-1579372786545-d24232daf58c?auto=format&fit=crop&w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1579372786545-d24232daf58c?auto=format&fit=crop&w=800&q=80",
     isAvailable: true,
     isFeatured: true,
     isPopular: true,
@@ -303,12 +368,14 @@ export const SEED_PRODUCTS = [
     name: "Fresh Mint Lemonade",
     nameAr: "عصير ليمون منعش بالنعناع الأخضر",
     slug: "fresh-mint-lemonade",
-    description: "Ice-cold refreshing lemonade blended with fresh garden mint leaves and crushed ice",
+    description:
+      "Ice-cold refreshing lemonade blended with fresh garden mint leaves and crushed ice",
     descriptionAr: "ليمونادة طازجة مع أوراق النعناع الأخضر والثلج المجروش للانتعاش الفوري",
     price: 45,
     originalPrice: null,
     categoryId: "cat_beverages",
-    image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80",
     isAvailable: true,
     isFeatured: false,
     isPopular: true,

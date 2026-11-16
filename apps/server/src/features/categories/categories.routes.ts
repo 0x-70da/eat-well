@@ -4,14 +4,14 @@ import { getCategoryByIdController } from "./controllers/getCategoryById.control
 import { createCategoryController } from "./controllers/createCategory.controller.js";
 import { updateCategoryController } from "./controllers/updateCategory.controller.js";
 import { deleteCategoryController } from "./controllers/deleteCategory.controller.js";
-import { adminMiddleware } from "../../middlewares/admin.middleware.js";
+import { requirePermission } from "../../middlewares/permission.middleware.js";
 
 const router: Router = Router();
 
 router.get("/", getCategoriesController);
 router.get("/:id", getCategoryByIdController);
-router.post("/", adminMiddleware, createCategoryController);
-router.put("/:id", adminMiddleware, updateCategoryController);
-router.delete("/:id", adminMiddleware, deleteCategoryController);
+router.post("/", requirePermission("categories", "create"), createCategoryController);
+router.put("/:id", requirePermission("categories", "update"), updateCategoryController);
+router.delete("/:id", requirePermission("categories", "delete"), deleteCategoryController);
 
 export default router;

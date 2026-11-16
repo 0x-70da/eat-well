@@ -1,11 +1,7 @@
 import { AppError } from "../../../lib/errors.js";
 import { getOrderByIdQuery } from "../queries/getOrderById.query.js";
 
-export const getOrderByIdService = async (
-  id: string,
-  userId?: string,
-  isAdmin = false,
-) => {
+export const getOrderByIdService = async (id: string, userId?: string, isAdmin = false) => {
   const order = await getOrderByIdQuery(id);
   if (!order) {
     throw new AppError("الطلب غير موجود", 404);

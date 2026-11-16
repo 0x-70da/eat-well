@@ -5,10 +5,7 @@ import { createProductReviewService } from "../services/createProductReview.serv
 import { auth } from "../../../lib/auth.js";
 import { fromNodeHeaders } from "better-auth/node";
 
-export const createProductReviewController = async (
-  req: Request,
-  res: Response,
-) => {
+export const createProductReviewController = async (req: Request, res: Response) => {
   const validated = createReviewSchema.parse(req.body);
 
   let userId: string | null = null;

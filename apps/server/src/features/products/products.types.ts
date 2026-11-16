@@ -1,6 +1,1 @@
-export type {
-  Product,
-  ProductSize,
-  ProductAddonGroup,
-  ProductAddonItem,
-} from "@workspace/types";
+export type { Product, ProductSize, ProductAddonGroup, ProductAddonItem } from "@workspace/types";

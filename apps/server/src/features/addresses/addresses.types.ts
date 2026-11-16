@@ -1,3 +1,1 @@
-export type {
-  DeliveryAddress,
-} from "@workspace/types";
+export type { DeliveryAddress } from "@workspace/types";

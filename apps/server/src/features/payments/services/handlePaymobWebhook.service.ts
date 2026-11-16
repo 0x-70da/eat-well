@@ -21,8 +21,7 @@ export const handlePaymobWebhookService = async (
   }
 
   const isSuccess = bodyObj.success === true || bodyObj.success === "true";
-  const orderData = bodyObj.order as
-    { merchant_order_id?: string; id?: number } | undefined;
+  const orderData = bodyObj.order as { merchant_order_id?: string; id?: number } | undefined;
   const merchantOrderNumber = orderData?.merchant_order_id;
 
   if (isSuccess && merchantOrderNumber) {

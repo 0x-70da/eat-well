@@ -6,10 +6,7 @@ import { auth } from "../../../lib/auth.js";
 import { fromNodeHeaders } from "better-auth/node";
 import type { PaymobCheckoutResponse } from "@workspace/types";
 
-export const createPaymobCheckoutController = async (
-  req: Request,
-  res: Response,
-) => {
+export const createPaymobCheckoutController = async (req: Request, res: Response) => {
   const parsed = createPaymobCheckoutSchema.safeParse(req.body);
   if (!parsed.success) {
     return error(
@@ -32,10 +29,7 @@ export const createPaymobCheckoutController = async (
     // Guest checkout
   }
 
-  const result: PaymobCheckoutResponse = await createPaymobCheckoutService(
-    parsed.data,
-    userId,
-  );
+  const result: PaymobCheckoutResponse = await createPaymobCheckoutService(parsed.data, userId);
 
   return success(res, "تم إنشاء جلسة دفع Paymob بنجاح", result, 201);
 };

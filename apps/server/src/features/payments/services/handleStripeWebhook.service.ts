@@ -17,9 +17,7 @@ export const handleStripeWebhookService = async (
       });
       event = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
     } else {
-      const bodyStr = Buffer.isBuffer(rawBody)
-        ? rawBody.toString("utf8")
-        : rawBody;
+      const bodyStr = Buffer.isBuffer(rawBody) ? rawBody.toString("utf8") : rawBody;
       event =
         typeof bodyStr === "string"
           ? (JSON.parse(bodyStr) as Stripe.Event)

@@ -1,4 +1,1 @@
-export type {
-  Coupon,
-  ValidateCouponResult,
-} from "@workspace/types";
+export type { Coupon, ValidateCouponResult } from "@workspace/types";

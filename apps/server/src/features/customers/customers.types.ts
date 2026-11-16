@@ -1,3 +1,1 @@
-export type {
-  CustomerSummary,
-} from "@workspace/types";
+export type { CustomerSummary } from "@workspace/types";

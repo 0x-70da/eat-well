@@ -58,8 +58,10 @@ export const getUsersQuery = async (
       banned: clean.banned ?? false,
       banReason: clean.banReason,
       banExpires: clean.banExpires ? new Date(clean.banExpires).toISOString() : undefined,
-      createdAt: clean.createdAt instanceof Date ? clean.createdAt.toISOString() : String(clean.createdAt),
-      updatedAt: clean.updatedAt instanceof Date ? clean.updatedAt.toISOString() : String(clean.updatedAt),
+      createdAt:
+        clean.createdAt instanceof Date ? clean.createdAt.toISOString() : String(clean.createdAt),
+      updatedAt:
+        clean.updatedAt instanceof Date ? clean.updatedAt.toISOString() : String(clean.updatedAt),
     };
   });
 

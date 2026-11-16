@@ -6,10 +6,7 @@ import { auth } from "../../../lib/auth.js";
 import { fromNodeHeaders } from "better-auth/node";
 import type { StripeCheckoutResponse } from "@workspace/types";
 
-export const createStripeCheckoutController = async (
-  req: Request,
-  res: Response,
-) => {
+export const createStripeCheckoutController = async (req: Request, res: Response) => {
   const parsed = createStripeCheckoutSchema.safeParse(req.body);
   if (!parsed.success) {
     return error(

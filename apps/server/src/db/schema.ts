@@ -1,15 +1,6 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  boolean,
-  index,
-  integer,
-  numeric,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, index, integer, numeric } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema.js";
 export { user };
-
 
 // Categories table
 export const categories = pgTable(
@@ -218,12 +209,8 @@ export const orders = pgTable(
     discountAmount: numeric("discount_amount", { precision: 10, scale: 2 })
       .default("0.00")
       .notNull(),
-    deliveryFee: numeric("delivery_fee", { precision: 10, scale: 2 })
-      .default("0.00")
-      .notNull(),
-    taxAmount: numeric("tax_amount", { precision: 10, scale: 2 })
-      .default("0.00")
-      .notNull(),
+    deliveryFee: numeric("delivery_fee", { precision: 10, scale: 2 }).default("0.00").notNull(),
+    taxAmount: numeric("tax_amount", { precision: 10, scale: 2 }).default("0.00").notNull(),
     totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
     couponCode: text("coupon_code"),
     cancellationReason: text("cancellation_reason"),
@@ -372,15 +359,11 @@ export const restaurantSettings = pgTable("restaurant_settings", {
   openingHour: text("opening_hour").default("11:00 AM").notNull(),
   closingHour: text("closing_hour").default("01:00 AM").notNull(),
   isDeliveryOpen: boolean("is_delivery_open").default(true).notNull(),
-  deliveryFee: numeric("delivery_fee", { precision: 10, scale: 2 })
-    .default("30.00")
-    .notNull(),
+  deliveryFee: numeric("delivery_fee", { precision: 10, scale: 2 }).default("30.00").notNull(),
   minOrderAmount: numeric("min_order_amount", { precision: 10, scale: 2 })
     .default("100.00")
     .notNull(),
-  estimatedPrepTimeMinutes: integer("estimated_prep_time_minutes")
-    .default(30)
-    .notNull(),
+  estimatedPrepTimeMinutes: integer("estimated_prep_time_minutes").default(30).notNull(),
   currency: text("currency").default("ج.م").notNull(),
   currencyCode: text("currency_code").default("EGP").notNull(),
   taxRate: numeric("tax_rate", { precision: 5, scale: 2 }).default("14.00").notNull(),

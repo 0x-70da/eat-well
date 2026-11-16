@@ -23,11 +23,7 @@ export const createPaymobCheckoutService = async (
     const authToken = await authenticatePaymob(config.apiKey);
 
     // Step B: Order Registration
-    const paymobOrderId = await registerPaymobOrder(
-      authToken,
-      amountCents,
-      order.orderNumber,
-    );
+    const paymobOrderId = await registerPaymobOrder(authToken, amountCents, order.orderNumber);
 
     // Step C: Payment Key Request (Strict 30-minute expiration = 1800s)
     const paymentToken = await requestPaymobPaymentKey(
@@ -42,10 +38,7 @@ export const createPaymobCheckoutService = async (
 
     // Step D: Special handling for Mobile Wallet (Vodafone Cash, etc.)
     if (input.paymobMethod === "vodafone_cash" && input.walletMobileNumber) {
-      redirectUrl = await processWalletPayment(
-        paymentToken,
-        input.walletMobileNumber,
-      );
+      redirectUrl = await processWalletPayment(paymentToken, input.walletMobileNumber);
     }
 
     const iframeUrl = `https://accept.paymob.com/api/acceptance/iframes/${config.iframeId}?payment_token=${paymentToken}`;
@@ -167,21 +160,18 @@ async function registerPaymobOrder(
   amountCents: number,
   merchantOrderId: string,
 ): Promise<number> {
-  const orderRes = await fetch(
-    "https://accept.paymob.com/api/ecommerce/orders",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        auth_token: authToken,
-        delivery_needed: "false",
-        amount_cents: amountCents.toString(),
-        currency: "EGP",
-        merchant_order_id: merchantOrderId,
-        items: [],
-      }),
-    },
-  );
+  const orderRes = await fetch("https://accept.paymob.com/api/ecommerce/orders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      auth_token: authToken,
+      delivery_needed: "false",
+      amount_cents: amountCents.toString(),
+      currency: "EGP",
+      merchant_order_id: merchantOrderId,
+      items: [],
+    }),
+  });
 
   if (!orderRes.ok) {
     throw new AppError("فشل تسجيل الطلب في بوابة Paymob", 502);
@@ -211,36 +201,33 @@ async function requestPaymobPaymentKey(
   const firstName = names[0] || "عميل";
   const lastName = names.slice(1).join(" ") || "إيت ويل";
 
-  const keyRes = await fetch(
-    "https://accept.paymob.com/api/acceptance/payment_keys",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        auth_token: authToken,
-        amount_cents: amountCents.toString(),
-        expiration: 1800, // 30 minutes in seconds
-        order_id: paymobOrderId,
-        billing_data: {
-          first_name: firstName,
-          last_name: lastName,
-          email: order.customerEmail || "customer@eatwell.com",
-          phone_number: order.customerPhone,
-          apartment: "NA",
-          floor: "NA",
-          street: order.deliveryAddress.slice(0, 50),
-          building: "NA",
-          shipping_method: "PKG",
-          postal_code: "11511",
-          city: "Cairo",
-          country: "EG",
-          state: "Cairo",
-        },
-        currency: "EGP",
-        integration_id: integrationId,
-      }),
-    },
-  );
+  const keyRes = await fetch("https://accept.paymob.com/api/acceptance/payment_keys", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      auth_token: authToken,
+      amount_cents: amountCents.toString(),
+      expiration: 1800, // 30 minutes in seconds
+      order_id: paymobOrderId,
+      billing_data: {
+        first_name: firstName,
+        last_name: lastName,
+        email: order.customerEmail || "customer@eatwell.com",
+        phone_number: order.customerPhone,
+        apartment: "NA",
+        floor: "NA",
+        street: order.deliveryAddress.slice(0, 50),
+        building: "NA",
+        shipping_method: "PKG",
+        postal_code: "11511",
+        city: "Cairo",
+        country: "EG",
+        state: "Cairo",
+      },
+      currency: "EGP",
+      integration_id: integrationId,
+    }),
+  });
 
   if (!keyRes.ok) {
     throw new AppError("فشل إصدار مفتاح الدفع من بوابة Paymob", 502);
@@ -258,20 +245,17 @@ async function processWalletPayment(
   paymentToken: string,
   walletMobileNumber: string,
 ): Promise<string | undefined> {
-  const payRes = await fetch(
-    "https://accept.paymob.com/api/acceptance/payments/pay",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        source: {
-          identifier: walletMobileNumber,
-          subtype: "WALLET",
-        },
-        payment_token: paymentToken,
-      }),
-    },
-  );
+  const payRes = await fetch("https://accept.paymob.com/api/acceptance/payments/pay", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      source: {
+        identifier: walletMobileNumber,
+        subtype: "WALLET",
+      },
+      payment_token: paymentToken,
+    }),
+  });
 
   if (payRes.ok) {
     const payData = (await payRes.json()) as {

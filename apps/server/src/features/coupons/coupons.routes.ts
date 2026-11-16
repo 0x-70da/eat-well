@@ -4,14 +4,14 @@ import { validateCouponController } from "./controllers/validateCoupon.controlle
 import { createCouponController } from "./controllers/createCoupon.controller.js";
 import { updateCouponController } from "./controllers/updateCoupon.controller.js";
 import { deleteCouponController } from "./controllers/deleteCoupon.controller.js";
-import { adminMiddleware } from "../../middlewares/admin.middleware.js";
+import { requirePermission } from "../../middlewares/permission.middleware.js";
 
 const router: Router = Router();
 
 router.post("/validate", validateCouponController);
-router.get("/", adminMiddleware, getCouponsController);
-router.post("/", adminMiddleware, createCouponController);
-router.put("/:id", adminMiddleware, updateCouponController);
-router.delete("/:id", adminMiddleware, deleteCouponController);
+router.get("/", requirePermission("coupons", "list"), getCouponsController);
+router.post("/", requirePermission("coupons", "create"), createCouponController);
+router.put("/:id", requirePermission("coupons", "update"), updateCouponController);
+router.delete("/:id", requirePermission("coupons", "delete"), deleteCouponController);
 
 export default router;

@@ -4,11 +4,7 @@ import { eq } from "drizzle-orm";
 import { attachOrderRelations } from "../utils/attachOrderRelations.js";
 
 export const getOrderByIdQuery = async (id: string) => {
-  const orderRows = await db
-    .select()
-    .from(orders)
-    .where(eq(orders.id, id))
-    .limit(1);
+  const orderRows = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
 
   if (orderRows.length === 0) return undefined;
   const attached = await attachOrderRelations(orderRows);

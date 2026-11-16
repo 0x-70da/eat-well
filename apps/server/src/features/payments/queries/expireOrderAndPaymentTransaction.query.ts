@@ -10,11 +10,7 @@ export const expireOrderAndPaymentTransactionQuery = async (
 ) => {
   return await db.transaction(async (tx) => {
     // 1. Fetch current order state
-    const [existingOrder] = await tx
-      .select()
-      .from(orders)
-      .where(eq(orders.id, orderId))
-      .limit(1);
+    const [existingOrder] = await tx.select().from(orders).where(eq(orders.id, orderId)).limit(1);
 
     if (!existingOrder) {
       return null;
@@ -34,9 +30,7 @@ export const expireOrderAndPaymentTransactionQuery = async (
       await tx
         .update(payments)
         .set({ status: "expired" })
-        .where(
-          and(eq(payments.orderId, orderId), eq(payments.status, "pending")),
-        );
+        .where(and(eq(payments.orderId, orderId), eq(payments.status, "pending")));
 
       return {
         expired: true,
@@ -58,9 +52,7 @@ export const expireOrderAndPaymentTransactionQuery = async (
     await tx
       .update(payments)
       .set({ status: "expired" })
-      .where(
-        and(eq(payments.orderId, orderId), eq(payments.status, "pending")),
-      );
+      .where(and(eq(payments.orderId, orderId), eq(payments.status, "pending")));
 
     // 4. Record status change in history
     await tx.insert(orderStatusHistory).values({

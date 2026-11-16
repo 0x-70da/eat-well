@@ -34,11 +34,7 @@ export const getPaymentStatusService = async (params: {
         order = await getOrderByIdQuery(sessionOrderId);
       }
 
-      if (
-        order &&
-        order.paymentStatus !== "paid" &&
-        session.payment_status === "paid"
-      ) {
+      if (order && order.paymentStatus !== "paid" && session.payment_status === "paid") {
         const amount = session.amount_total
           ? session.amount_total / 100
           : Number(order.totalAmount);
@@ -67,15 +63,13 @@ export const getPaymentStatusService = async (params: {
 
   const isPaid = order.paymentStatus === "paid";
   const isCancelled = order.status === "cancelled";
-  const isExpired =
-    latestPayment?.status === "expired" || (isCancelled && !isPaid);
+  const isExpired = latestPayment?.status === "expired" || (isCancelled && !isPaid);
 
   return {
     orderId: order.id,
     orderNumber: order.orderNumber,
     orderStatus: order.status,
-    paymentStatus: order.paymentStatus as
-      "pending" | "paid" | "failed" | "refunded",
+    paymentStatus: order.paymentStatus as "pending" | "paid" | "failed" | "refunded",
     paymentMethod: order.paymentMethod as PaymentProvider,
     totalAmount: Number(order.totalAmount),
     isPaid,

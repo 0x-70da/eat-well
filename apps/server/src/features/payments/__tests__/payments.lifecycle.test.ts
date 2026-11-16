@@ -1,5 +1,4 @@
-import { describe, it } from "node:test";
-import assert from "node:assert/strict";
+import { describe, it, expect } from "vitest";
 import {
   createOrderSchema,
   createStripeCheckoutSchema,
@@ -15,14 +14,14 @@ describe("Payment Integration & Lifecycle Tests", () => {
       const result = createStripeCheckoutSchema.safeParse({
         orderId: "ord_test_123",
       });
-      assert.equal(result.success, true);
+      expect(result.success).toBe(true);
     });
 
     it("should reject Stripe checkout input with empty orderId", () => {
       const result = createStripeCheckoutSchema.safeParse({
         orderId: "",
       });
-      assert.equal(result.success, false);
+      expect(result.success).toBe(false);
     });
 
     it("should accept Paymob checkout input with card, vodafone cash, or instapay", () => {
@@ -30,14 +29,14 @@ describe("Payment Integration & Lifecycle Tests", () => {
         orderId: "ord_test_123",
         paymobMethod: "card",
       });
-      assert.equal(resultCard.success, true);
+      expect(resultCard.success).toBe(true);
 
       const resultWallet = createPaymobCheckoutSchema.safeParse({
         orderId: "ord_test_123",
         paymobMethod: "vodafone_cash",
         walletMobileNumber: "01012345678",
       });
-      assert.equal(resultWallet.success, true);
+      expect(resultWallet.success).toBe(true);
     });
 
     it("should accept createOrder with savedAddressId or saveAddress flags", () => {
@@ -54,8 +53,8 @@ describe("Payment Integration & Lifecycle Tests", () => {
           },
         ],
       });
-      assert.equal(resultWithSaved.success, true);
-      assert.equal(resultWithSaved.data?.savedAddressId, "addr_12345");
+      expect(resultWithSaved.success).toBe(true);
+      expect(resultWithSaved.data?.savedAddressId).toBe("addr_12345");
 
       const resultWithSaveFlag = createOrderSchema.safeParse({
         customerName: "عميل تجريبي",
@@ -71,18 +70,18 @@ describe("Payment Integration & Lifecycle Tests", () => {
           },
         ],
       });
-      assert.equal(resultWithSaveFlag.success, true);
-      assert.equal(resultWithSaveFlag.data?.saveAddress, true);
-      assert.equal(resultWithSaveFlag.data?.addressTitle, "المنزل");
+      expect(resultWithSaveFlag.success).toBe(true);
+      expect(resultWithSaveFlag.data?.saveAddress).toBe(true);
+      expect(resultWithSaveFlag.data?.addressTitle).toBe("المنزل");
     });
   });
 
   describe("2. Payment Availability Service", () => {
     it("should always report Cash on Delivery (COD) as available", () => {
       const availability = getPaymentAvailabilityService();
-      assert.equal(availability.cod, true);
-      assert.equal(typeof availability.stripe, "boolean");
-      assert.equal(typeof availability.paymob, "boolean");
+      expect(availability.cod).toBe(true);
+      expect(typeof availability.stripe).toBe("boolean");
+      expect(typeof availability.paymob).toBe("boolean");
     });
   });
 
@@ -140,19 +139,13 @@ describe("Payment Integration & Lifecycle Tests", () => {
         sampleObj.success,
       ].join("");
 
-      const validHmac = crypto
-        .createHmac("sha512", secret)
-        .update(concatenated)
-        .digest("hex");
+      const validHmac = crypto.createHmac("sha512", secret).update(concatenated).digest("hex");
 
       const isValid = verifyPaymobHmac(sampleObj, validHmac);
-      assert.equal(isValid, true, "Valid HMAC should be accepted");
+      expect(isValid).toBe(true);
 
-      const isInvalid = verifyPaymobHmac(
-        sampleObj,
-        "fake_hmac_signature_value",
-      );
-      assert.equal(isInvalid, false, "Invalid HMAC should be rejected");
+      const isInvalid = verifyPaymobHmac(sampleObj, "fake_hmac_signature_value");
+      expect(isInvalid).toBe(false);
     });
   });
 });

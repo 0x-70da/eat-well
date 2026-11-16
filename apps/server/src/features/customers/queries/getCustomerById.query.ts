@@ -14,9 +14,10 @@ export const getCustomerByIdQuery = async (id: string) => {
     .orderBy(desc(orders.createdAt));
 
   const orderIds = customerOrders.map((o) => o.id);
-  const items = orderIds.length > 0
-    ? await db.select().from(orderItems).where(inArray(orderItems.orderId, orderIds))
-    : [];
+  const items =
+    orderIds.length > 0
+      ? await db.select().from(orderItems).where(inArray(orderItems.orderId, orderIds))
+      : [];
 
   const itemsByOrder = new Map<string, typeof items>();
   for (const item of items) {

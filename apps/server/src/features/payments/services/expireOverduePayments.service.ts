@@ -2,8 +2,7 @@ import { getOverduePendingPaymentsQuery } from "../queries/getOverduePendingPaym
 import { expireOrderAndPaymentTransactionQuery } from "../queries/expireOrderAndPaymentTransaction.query.js";
 
 export const expireOverduePaymentsService = async (expirationMinutes = 30) => {
-  const overdueRecords =
-    await getOverduePendingPaymentsQuery(expirationMinutes);
+  const overdueRecords = await getOverduePendingPaymentsQuery(expirationMinutes);
   const expiredOrders: string[] = [];
 
   for (const record of overdueRecords) {

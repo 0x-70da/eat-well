@@ -1,3 +1,1 @@
-export type {
-  Category,
-} from "@workspace/types";
+export type { Category } from "@workspace/types";

@@ -1,3 +1,1 @@
-export type {
-  ProductReview,
-} from "@workspace/types";
+export type { ProductReview } from "@workspace/types";

@@ -42,7 +42,9 @@ export const getDashboardStatsQuery = async (): Promise<DashboardStats> => {
   }
 
   const averageOrderValue =
-    totalOrders > 0 ? Math.round((totalRevenue / (totalOrders - cancelledOrders || 1)) * 100) / 100 : 0;
+    totalOrders > 0
+      ? Math.round((totalRevenue / (totalOrders - cancelledOrders || 1)) * 100) / 100
+      : 0;
 
   // 2. Total customers count
   const [customersCount] = await db

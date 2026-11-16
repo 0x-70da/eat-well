@@ -9,11 +9,7 @@ import {
   coupons,
   user,
 } from "../../../db/schema.js";
-import {
-  SEED_CATEGORIES,
-  SEED_PRODUCTS,
-  SEED_COUPONS,
-} from "../seed.data.js";
+import { SEED_CATEGORIES, SEED_PRODUCTS, SEED_COUPONS } from "../seed.data.js";
 import { count, eq } from "drizzle-orm";
 import crypto from "crypto";
 
@@ -120,8 +116,10 @@ export const seedDatabaseService = async () => {
       sloganAr: "أشهى المأكولات والمشاوي على الفحم بأعلى معايير الجودة المصرية الأصيلة",
       descriptionAr:
         "نقدم تجربة طعام فريدة تجمع بين أصالة المشاوي الشرقية على الفحم والشاورما الفاخرة والطواجن الفخارية المطهوة بعناية فائقة، باستخدام أجود أنواع اللحوم الطازجة والمكونات الطبيعية.",
-      logoUrl: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80",
-      coverUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
+      logoUrl:
+        "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80",
+      coverUrl:
+        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
       phone: "+20 100 000 0000",
       secondaryPhone: "+20 120 000 0000",
       email: "info@eatwell-restaurant.com",
@@ -168,10 +166,7 @@ export const seedDatabaseService = async () => {
     .limit(1);
 
   if (adminUser && adminUser.role !== "super_admin") {
-    await db
-      .update(user)
-      .set({ role: "super_admin" })
-      .where(eq(user.id, adminUser.id));
+    await db.update(user).set({ role: "super_admin" }).where(eq(user.id, adminUser.id));
   }
 
   return {

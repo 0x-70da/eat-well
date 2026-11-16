@@ -7,12 +7,7 @@ export const getProductReviewsQuery = async (productId: string) => {
   const rows = await db
     .select()
     .from(productReviews)
-    .where(
-      and(
-        eq(productReviews.productId, productId),
-        eq(productReviews.isApproved, true),
-      ),
-    )
+    .where(and(eq(productReviews.productId, productId), eq(productReviews.isApproved, true)))
     .orderBy(desc(productReviews.createdAt));
 
   return rows.map((r) => nullToUndefined(r));

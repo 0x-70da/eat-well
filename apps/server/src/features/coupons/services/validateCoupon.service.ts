@@ -22,10 +22,7 @@ export const validateCouponService = async (
 
   const minOrder = Number(coupon.minOrderAmount || 0);
   if (input.subtotal < minOrder) {
-    throw new AppError(
-      `الحد الأدنى للطلب لاستخدام هذا الكوبون هو ${minOrder} ج.م`,
-      400,
-    );
+    throw new AppError(`الحد الأدنى للطلب لاستخدام هذا الكوبون هو ${minOrder} ج.م`, 400);
   }
 
   const discountVal = Number(coupon.discountValue);

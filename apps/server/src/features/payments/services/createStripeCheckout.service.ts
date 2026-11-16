@@ -7,10 +7,7 @@ import Stripe from "stripe";
 const getStripeClient = (): Stripe => {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey) {
-    throw new AppError(
-      "بوابة الدفع Stripe غير مهيأة حالياً. يرجى اختيار وسيلة دفع أخرى.",
-      503,
-    );
+    throw new AppError("بوابة الدفع Stripe غير مهيأة حالياً. يرجى اختيار وسيلة دفع أخرى.", 503);
   }
   return new Stripe(secretKey, {
     apiVersion: "2025-02-24.acacia" as Stripe.LatestApiVersion,
@@ -76,10 +73,7 @@ export const createStripeCheckoutService = async (
     });
 
     if (!session.client_secret) {
-      throw new AppError(
-        "فشل استخراج المفتاح السري لجلسة الدفع من Stripe",
-        500,
-      );
+      throw new AppError("فشل استخراج المفتاح السري لجلسة الدفع من Stripe", 500);
     }
 
     // 4. Record pending payment transaction

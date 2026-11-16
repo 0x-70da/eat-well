@@ -1,9 +1,6 @@
 import crypto from "crypto";
 
-export const verifyPaymobHmac = (
-  obj: Record<string, unknown>,
-  receivedHmac: string,
-): boolean => {
+export const verifyPaymobHmac = (obj: Record<string, unknown>, receivedHmac: string): boolean => {
   const hmacSecret = process.env.PAYMOB_HMAC_SECRET;
   if (!hmacSecret) return true; // if secret not set yet in development
 
@@ -35,10 +32,7 @@ export const verifyPaymobHmac = (
     .map((val) => (val === null || val === undefined ? "" : String(val)))
     .join("");
 
-  const calculatedHmac = crypto
-    .createHmac("sha512", hmacSecret)
-    .update(concatenated)
-    .digest("hex");
+  const calculatedHmac = crypto.createHmac("sha512", hmacSecret).update(concatenated).digest("hex");
 
   return calculatedHmac.toLowerCase() === receivedHmac.toLowerCase();
 };

@@ -2,12 +2,12 @@ import { Router } from "express";
 import { getUsersController } from "./controllers/getUsers.controller.js";
 import { updateUserRoleController } from "./controllers/updateUserRole.controller.js";
 import { banUserController } from "./controllers/banUser.controller.js";
-import { adminMiddleware } from "../../middlewares/admin.middleware.js";
+import { requirePermission } from "../../middlewares/permission.middleware.js";
 
 const router: Router = Router();
 
-router.get("/", adminMiddleware, getUsersController);
-router.put("/:id/role", adminMiddleware, updateUserRoleController);
-router.post("/:id/ban", adminMiddleware, banUserController);
+router.get("/", requirePermission("users", "list"), getUsersController);
+router.put("/:id/role", requirePermission("roles", "assign"), updateUserRoleController);
+router.post("/:id/ban", requirePermission("users", "ban"), banUserController);
 
 export default router;
