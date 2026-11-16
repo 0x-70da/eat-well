@@ -2,9 +2,9 @@ import { UserPlus } from "lucide-react";
 
 export function RegisterHeader() {
   return (
-    <div className="text-center space-y-2">
-      <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto shadow-xs">
-        <UserPlus className="w-6 h-6" />
+    <div className="space-y-2 text-center">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
+        <UserPlus className="h-6 w-6" />
       </div>
       <h1 className="text-2xl font-black text-foreground">إنشاء حساب جديد</h1>
       <p className="text-xs text-muted-foreground">
