@@ -1,3 +1,5 @@
+import type { StaffRole } from "./rbac.types.js";
+
 export interface DashboardStats {
   totalRevenue: number;
   todayRevenue: number;
@@ -40,7 +42,7 @@ export interface StaffMember {
   name: string;
   email?: string;
   phone?: string | null;
-  role: "super_admin" | "admin" | "manager" | "order_manager" | "staff";
+  role: StaffRole;
   isActive: boolean;
   createdAt: Date | string;
 }

@@ -1,5 +1,6 @@
-export type UserRole =
-  "super_admin" | "admin" | "manager" | "order_manager" | "staff" | "user";
+import type { RoleName } from "./rbac.types.js";
+
+export type UserRole = RoleName;
 
 export interface AuthUser {
   id: string;
