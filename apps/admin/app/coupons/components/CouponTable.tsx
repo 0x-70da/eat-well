@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Coupon } from "@workspace/types";
+import { usePermission } from "@/hooks/usePermission";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -21,17 +22,18 @@ import {
   TableRow,
 } from "@workspace/ui/components/table";
 import { Plus, Trash2, CheckCircle2, XCircle, Loader2 } from "lucide-react";
-import {
-  createCoupon,
-  updateCoupon,
-  deleteCoupon,
-} from "../requests/getCoupons";
+import { createCoupon, updateCoupon, deleteCoupon } from "../requests/getCoupons";
 
 export interface CouponTableProps {
   coupons: Coupon[];
 }
 
 export function CouponTable({ coupons: initialCoupons }: CouponTableProps) {
+  const { can } = usePermission();
+  const canCreate = can("coupons", "create");
+  const canUpdate = can("coupons", "update");
+  const canDelete = can("coupons", "delete");
+
   const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,9 +76,7 @@ export function CouponTable({ coupons: initialCoupons }: CouponTableProps) {
     const res = await updateCoupon(c.id, { isActive: updated });
     if (res.success) {
       setCoupons((prev) =>
-        prev.map((item) =>
-          item.id === c.id ? { ...item, isActive: updated } : item,
-        ),
+        prev.map((item) => (item.id === c.id ? { ...item, isActive: updated } : item)),
       );
     }
   };
@@ -104,20 +104,20 @@ export function CouponTable({ coupons: initialCoupons }: CouponTableProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <span className="text-sm text-muted-foreground">
-          إجمالي الكوبونات: {coupons.length}
-        </span>
-        <Button onClick={openCreateModal} className="gap-2">
-          <Plus className="w-4 h-4" />
-          <span>إنشاء كوبون خصم جديد</span>
-        </Button>
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">إجمالي الكوبونات: {coupons.length}</span>
+        {canCreate && (
+          <Button onClick={openCreateModal} className="gap-2">
+            <Plus className="h-4 w-4" />
+            <span>إنشاء كوبون خصم جديد</span>
+          </Button>
+        )}
       </div>
 
       <Card>
         <CardContent className="p-0">
           {coupons.length === 0 ? (
-            <div className="text-center py-12 text-sm text-muted-foreground">
+            <div className="py-12 text-center text-sm text-muted-foreground">
               لا توجد كوبونات مسجلة حالياً
             </div>
           ) : (
@@ -136,54 +136,63 @@ export function CouponTable({ coupons: initialCoupons }: CouponTableProps) {
               <TableBody>
                 {coupons.map((c) => (
                   <TableRow key={c.id}>
-                    <TableCell className="font-mono font-bold text-xs text-primary">
+                    <TableCell className="font-mono text-xs font-bold text-primary">
                       {c.code}
                     </TableCell>
-                    <TableCell className="font-semibold text-xs">
+                    <TableCell className="text-xs font-semibold">
                       {c.discountType === "percentage"
                         ? `${c.discountValue}%`
                         : `${c.discountValue} ج.م`}
                     </TableCell>
+                    <TableCell className="text-xs">{c.minOrderAmount} ج.م</TableCell>
                     <TableCell className="text-xs">
-                      {c.minOrderAmount} ج.م
-                    </TableCell>
-                    <TableCell className="text-xs">
-                      {c.maxDiscountAmount
-                        ? `${c.maxDiscountAmount} ج.م`
-                        : "غير محدد"}
+                      {c.maxDiscountAmount ? `${c.maxDiscountAmount} ج.م` : "غير محدد"}
                     </TableCell>
                     <TableCell className="text-xs">
                       {c.usedCount} {c.usageLimit ? `/ ${c.usageLimit}` : ""}
                     </TableCell>
                     <TableCell>
-                      <button
-                        onClick={() => handleToggleActive(c)}
-                        className="cursor-pointer"
-                      >
-                        {c.isActive ? (
-                          <Badge variant="success" className="gap-1">
-                            <CheckCircle2 className="w-3 h-3" />
-                            <span>مفعل</span>
-                          </Badge>
-                        ) : (
-                          <Badge variant="destructive" className="gap-1">
-                            <XCircle className="w-3 h-3" />
-                            <span>معطل</span>
-                          </Badge>
-                        )}
-                      </button>
+                      {canUpdate ? (
+                        <button onClick={() => handleToggleActive(c)} className="cursor-pointer">
+                          {c.isActive ? (
+                            <Badge variant="success" className="gap-1">
+                              <CheckCircle2 className="h-3 w-3" />
+                              <span>مفعل</span>
+                            </Badge>
+                          ) : (
+                            <Badge variant="destructive" className="gap-1">
+                              <XCircle className="h-3 w-3" />
+                              <span>معطل</span>
+                            </Badge>
+                          )}
+                        </button>
+                      ) : c.isActive ? (
+                        <Badge variant="success" className="gap-1">
+                          <CheckCircle2 className="h-3 w-3" />
+                          <span>مفعل</span>
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive" className="gap-1">
+                          <XCircle className="h-3 w-3" />
+                          <span>معطل</span>
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center">
-                        <Button
-                          variant="outline"
-                          size="icon-xs"
-                          onClick={() => handleDelete(c.id)}
-                          title="حذف"
-                          className="text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
+                        {canDelete ? (
+                          <Button
+                            variant="outline"
+                            size="icon-xs"
+                            onClick={() => handleDelete(c.id)}
+                            title="حذف"
+                            className="text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -196,10 +205,10 @@ export function CouponTable({ coupons: initialCoupons }: CouponTableProps) {
 
       {/* Create Coupon Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
           <form
             onSubmit={handleSubmit(onFormSubmit)}
-            className="bg-card border border-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl"
+            className="max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl"
             noValidate
           >
             <div className="flex items-center justify-between border-b border-border pb-3">
@@ -216,90 +225,72 @@ export function CouponTable({ coupons: initialCoupons }: CouponTableProps) {
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="font-semibold block mb-1">
-                  كود الخصم (Promo Code) *
-                </label>
+                <label className="mb-1 block font-semibold">كود الخصم (Promo Code) *</label>
                 <input
                   type="text"
                   dir="ltr"
                   {...register("code", {
                     setValueAs: (v: string) => v?.toUpperCase(),
                   })}
-                  className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 font-mono uppercase"
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 font-mono uppercase"
                   placeholder="مثال: SUMMER25"
                 />
                 {errors.code && (
-                  <p className="text-xs text-destructive mt-1">
-                    {errors.code.message}
-                  </p>
+                  <p className="mt-1 text-xs text-destructive">{errors.code.message}</p>
                 )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold block mb-1">
-                    نوع الخصم *
-                  </label>
+                  <label className="mb-1 block font-semibold">نوع الخصم *</label>
                   <select
                     {...register("discountType")}
-                    className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
+                    className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
                   >
                     <option value="percentage">نسبة مئوية (%)</option>
                     <option value="fixed">مبلغ ثابت (ج.م)</option>
                   </select>
                   {errors.discountType && (
-                    <p className="text-xs text-destructive mt-1">
-                      {errors.discountType.message}
-                    </p>
+                    <p className="mt-1 text-xs text-destructive">{errors.discountType.message}</p>
                   )}
                 </div>
                 <div>
-                  <label className="font-semibold block mb-1">
-                    قيمة الخصم *
-                  </label>
+                  <label className="mb-1 block font-semibold">قيمة الخصم *</label>
                   <input
                     type="number"
                     step="0.5"
                     {...register("discountValue")}
-                    className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
+                    className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
                     placeholder="15"
                   />
                   {errors.discountValue && (
-                    <p className="text-xs text-destructive mt-1">
-                      {errors.discountValue.message}
-                    </p>
+                    <p className="mt-1 text-xs text-destructive">{errors.discountValue.message}</p>
                   )}
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold block mb-1">
-                    الحد الأدنى للطلب (ج.م)
-                  </label>
+                  <label className="mb-1 block font-semibold">الحد الأدنى للطلب (ج.م)</label>
                   <input
                     type="number"
                     {...register("minOrderAmount")}
-                    className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
+                    className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
                   />
                   {errors.minOrderAmount && (
-                    <p className="text-xs text-destructive mt-1">
-                      {errors.minOrderAmount.message}
-                    </p>
+                    <p className="mt-1 text-xs text-destructive">{errors.minOrderAmount.message}</p>
                   )}
                 </div>
                 <div>
-                  <label className="font-semibold block mb-1">
-                    الحد الأقصى للخصم (ج.م)
-                  </label>
+                  <label className="mb-1 block font-semibold">الحد الأقصى للخصم (ج.م)</label>
                   <input
                     type="number"
                     {...register("maxDiscountAmount")}
-                    className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
+                    className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
                     placeholder="اتركه فارغاً إذا كان بدون حد"
                   />
                   {errors.maxDiscountAmount && (
-                    <p className="text-xs text-destructive mt-1">
+                    <p className="mt-1 text-xs text-destructive">
                       {errors.maxDiscountAmount.message}
                     </p>
                   )}
@@ -307,36 +298,30 @@ export function CouponTable({ coupons: initialCoupons }: CouponTableProps) {
               </div>
 
               <div>
-                <label className="font-semibold block mb-1">
-                  الحد الأقصى لعدد مرات الاستخدام
-                </label>
+                <label className="mb-1 block font-semibold">الحد الأقصى لعدد مرات الاستخدام</label>
                 <input
                   type="number"
                   {...register("usageLimit")}
-                  className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
                   placeholder="مثال: 500"
                 />
                 {errors.usageLimit && (
-                  <p className="text-xs text-destructive mt-1">
-                    {errors.usageLimit.message}
-                  </p>
+                  <p className="mt-1 text-xs text-destructive">{errors.usageLimit.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="font-semibold block mb-1">
-                  الوصف بالعربية
-                </label>
+                <label className="mb-1 block font-semibold">الوصف بالعربية</label>
                 <input
                   type="text"
                   {...register("descriptionAr")}
-                  className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
                   placeholder="خصم خاص بمناسبة الافتتاح..."
                 />
               </div>
             </div>
 
-            <div className="border-t border-border pt-4 flex justify-end gap-2">
+            <div className="flex justify-end gap-2 border-t border-border pt-4">
               <Button
                 type="button"
                 variant="outline"
@@ -348,7 +333,7 @@ export function CouponTable({ coupons: initialCoupons }: CouponTableProps) {
               <Button type="submit" size="sm" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 ml-1 animate-spin" />
+                    <Loader2 className="ml-1 h-4 w-4 animate-spin" />
                     جاري الإنشاء...
                   </>
                 ) : (

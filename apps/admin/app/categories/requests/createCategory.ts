@@ -6,10 +6,7 @@ export const createCategory = async (payload: CreateCategoryInput) => {
   return await post<Category, CreateCategoryInput>("/categories", payload);
 };
 
-export const updateCategory = async (
-  id: string,
-  payload: UpdateCategoryInput,
-) => {
+export const updateCategory = async (id: string, payload: UpdateCategoryInput) => {
   return await put<Category, UpdateCategoryInput>(`/categories/${id}`, payload);
 };
 

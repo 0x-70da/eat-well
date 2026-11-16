@@ -1,7 +1,7 @@
 import { authClient } from "@/lib/auth-client";
-import type { AuthSession } from "@workspace/types";
+import { type AuthSession, STAFF_ROLES } from "@workspace/types";
 
-export const STAFF_ROLES = ["admin", "super_admin", "manager", "order_manager", "staff"] as const;
+export { STAFF_ROLES };
 
 export async function getAdminSession(): Promise<AuthSession | null> {
   if (typeof window === "undefined") {

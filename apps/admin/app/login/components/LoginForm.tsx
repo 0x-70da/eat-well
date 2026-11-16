@@ -56,7 +56,7 @@ export function LoginForm() {
       )}
 
       <div className="space-y-1.5">
-        <label htmlFor="email" className="text-xs font-semibold block">
+        <label htmlFor="email" className="block text-xs font-semibold">
           البريد الإلكتروني للإدارة
         </label>
         <Input
@@ -69,13 +69,11 @@ export function LoginForm() {
           aria-invalid={!!errors.email}
           {...register("email")}
         />
-        {errors.email && (
-          <p className="text-xs text-destructive">{errors.email.message}</p>
-        )}
+        {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor="password" className="text-xs font-semibold block">
+        <label htmlFor="password" className="block text-xs font-semibold">
           كلمة المرور
         </label>
         <Input
@@ -87,9 +85,7 @@ export function LoginForm() {
           aria-invalid={!!errors.password}
           {...register("password")}
         />
-        {errors.password && (
-          <p className="text-xs text-destructive">{errors.password.message}</p>
-        )}
+        {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
       </div>
 
       <Button type="submit" className="w-full" size="lg" disabled={isLoading}>

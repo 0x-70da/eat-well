@@ -17,14 +17,10 @@ export const metadata: Metadata = {
   description: "نظام إدارة المطعم والطلبات والمنتجات والتقارير",
 };
 
-export default function AdminRootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ar" dir="rtl" className={cn("h-full antialiased", cairo.variable)}>
-      <body className="min-h-full flex bg-background text-foreground font-sans">
+      <body className="flex min-h-full bg-background font-sans text-foreground">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

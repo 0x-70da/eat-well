@@ -16,8 +16,8 @@ export default function AdminGlobalError({
 
   return (
     <html lang="ar" dir="rtl">
-      <body className="min-h-screen flex items-center justify-center bg-background text-foreground p-6">
-        <div className="text-center space-y-4 max-w-md">
+      <body className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground">
+        <div className="max-w-md space-y-4 text-center">
           <h1 className="text-2xl font-bold">خطأ في النظام</h1>
           <p className="text-sm text-muted-foreground">
             حدث خطأ حرج في النظام، يرجى إعادة المحاولة.

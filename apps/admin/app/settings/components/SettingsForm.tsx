@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { RestaurantSettings } from "@workspace/types";
+import { usePermission } from "@/hooks/usePermission";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -10,12 +11,7 @@ import {
   type UpdateSettingsRawInput,
 } from "@workspace/validation";
 import { Button } from "@workspace/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { updateAdminSettings } from "../requests/getSettings";
 import { Check, Save, Loader2 } from "lucide-react";
 
@@ -24,6 +20,9 @@ export interface SettingsFormProps {
 }
 
 export function SettingsForm({ settings: initialSettings }: SettingsFormProps) {
+  const { can } = usePermission();
+  const canUpdate = can("settings", "update");
+
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
@@ -68,274 +67,234 @@ export function SettingsForm({ settings: initialSettings }: SettingsFormProps) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onFormSubmit)}
-      className="space-y-6 max-w-4xl"
-      noValidate
-    >
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-bold">
-            الهوية والبيانات الأساسية
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-xs">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit(onFormSubmit)} className="max-w-4xl space-y-6" noValidate>
+      {!canUpdate && (
+        <div className="rounded-lg bg-muted p-3 text-xs text-muted-foreground">
+          وضع العرض فقط: لا تملك صلاحية تعديل إعدادات المطعم.
+        </div>
+      )}
+      <fieldset disabled={!canUpdate} className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-bold">الهوية والبيانات الأساسية</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-xs">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block font-semibold">اسم المطعم بالعربية *</label>
+                <input
+                  type="text"
+                  {...register("restaurantNameAr")}
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
+                />
+                {errors.restaurantNameAr && (
+                  <p className="mt-1 text-xs text-destructive">{errors.restaurantNameAr.message}</p>
+                )}
+              </div>
+              <div>
+                <label className="mb-1 block font-semibold">اسم المطعم بالإنجليزية *</label>
+                <input
+                  type="text"
+                  dir="ltr"
+                  {...register("restaurantName")}
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
+                />
+                {errors.restaurantName && (
+                  <p className="mt-1 text-xs text-destructive">{errors.restaurantName.message}</p>
+                )}
+              </div>
+            </div>
+
             <div>
-              <label className="font-semibold block mb-1">
-                اسم المطعم بالعربية *
-              </label>
+              <label className="mb-1 block font-semibold">الشعار اللفظي (Slogan)</label>
               <input
                 type="text"
-                {...register("restaurantNameAr")}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
+                {...register("sloganAr")}
+                className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
               />
-              {errors.restaurantNameAr && (
-                <p className="text-xs text-destructive mt-1">
-                  {errors.restaurantNameAr.message}
-                </p>
-              )}
             </div>
-            <div>
-              <label className="font-semibold block mb-1">
-                اسم المطعم بالإنجليزية *
-              </label>
-              <input
-                type="text"
-                dir="ltr"
-                {...register("restaurantName")}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
-              />
-              {errors.restaurantName && (
-                <p className="text-xs text-destructive mt-1">
-                  {errors.restaurantName.message}
-                </p>
-              )}
-            </div>
-          </div>
 
-          <div>
-            <label className="font-semibold block mb-1">
-              الشعار اللفظي (Slogan)
-            </label>
-            <input
-              type="text"
-              {...register("sloganAr")}
-              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
-            />
-          </div>
+            <div>
+              <label className="mb-1 block font-semibold">
+                نبذة عن المطعم (تظهر في الموقع الرئيسي)
+              </label>
+              <textarea
+                rows={3}
+                {...register("descriptionAr")}
+                className="w-full rounded-md border border-input bg-background px-3 py-2"
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-          <div>
-            <label className="font-semibold block mb-1">
-              نبذة عن المطعم (تظهر في الموقع الرئيسي)
-            </label>
-            <textarea
-              rows={3}
-              {...register("descriptionAr")}
-              className="w-full rounded-md border border-input bg-background px-3 py-2"
-            />
-          </div>
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-bold">معلومات التواصل والموقع</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-xs">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div>
+                <label className="mb-1 block font-semibold">رقم الهاتف الرئيسي *</label>
+                <input
+                  type="text"
+                  dir="ltr"
+                  {...register("phone")}
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 font-mono"
+                />
+                {errors.phone && (
+                  <p className="mt-1 text-xs text-destructive">{errors.phone.message}</p>
+                )}
+              </div>
+              <div>
+                <label className="mb-1 block font-semibold">رقم الهاتف الثانوي</label>
+                <input
+                  type="text"
+                  dir="ltr"
+                  {...register("secondaryPhone")}
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 font-mono"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block font-semibold">رقم الواتساب للطلبات</label>
+                <input
+                  type="text"
+                  dir="ltr"
+                  {...register("whatsappNumber")}
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 font-mono"
+                />
+              </div>
+            </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-bold">
-            معلومات التواصل والموقع
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-xs">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="font-semibold block mb-1">
-                رقم الهاتف الرئيسي *
-              </label>
-              <input
-                type="text"
-                dir="ltr"
-                {...register("phone")}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 font-mono"
-              />
-              {errors.phone && (
-                <p className="text-xs text-destructive mt-1">
-                  {errors.phone.message}
-                </p>
-              )}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block font-semibold">البريد الإلكتروني الرسمي</label>
+                <input
+                  type="email"
+                  dir="ltr"
+                  {...register("email")}
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
+                />
+                {errors.email && (
+                  <p className="mt-1 text-xs text-destructive">{errors.email.message}</p>
+                )}
+              </div>
+              <div>
+                <label className="mb-1 block font-semibold">عنوان المطعم بالعربية *</label>
+                <input
+                  type="text"
+                  {...register("addressAr")}
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
+                />
+                {errors.addressAr && (
+                  <p className="mt-1 text-xs text-destructive">{errors.addressAr.message}</p>
+                )}
+              </div>
             </div>
-            <div>
-              <label className="font-semibold block mb-1">
-                رقم الهاتف الثانوي
-              </label>
-              <input
-                type="text"
-                dir="ltr"
-                {...register("secondaryPhone")}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 font-mono"
-              />
-            </div>
-            <div>
-              <label className="font-semibold block mb-1">
-                رقم الواتساب للطلبات
-              </label>
-              <input
-                type="text"
-                dir="ltr"
-                {...register("whatsappNumber")}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 font-mono"
-              />
-            </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="font-semibold block mb-1">
-                البريد الإلكتروني الرسمي
-              </label>
-              <input
-                type="email"
-                dir="ltr"
-                {...register("email")}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
-              />
-              {errors.email && (
-                <p className="text-xs text-destructive mt-1">
-                  {errors.email.message}
-                </p>
-              )}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-bold">مواعيد العمل والتوصيل</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-xs">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block font-semibold">ساعة الفتح</label>
+                <input
+                  type="text"
+                  {...register("openingHour")}
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
+                  placeholder="11:00 AM"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block font-semibold">ساعة الإغلاق</label>
+                <input
+                  type="text"
+                  {...register("closingHour")}
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
+                  placeholder="02:00 AM"
+                />
+              </div>
             </div>
-            <div>
-              <label className="font-semibold block mb-1">
-                عنوان المطعم بالعربية *
-              </label>
-              <input
-                type="text"
-                {...register("addressAr")}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
-              />
-              {errors.addressAr && (
-                <p className="text-xs text-destructive mt-1">
-                  {errors.addressAr.message}
-                </p>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-bold">
-            مواعيد العمل والتوصيل
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-xs">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="font-semibold block mb-1">ساعة الفتح</label>
-              <input
-                type="text"
-                {...register("openingHour")}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
-                placeholder="11:00 AM"
-              />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div>
+                <label className="mb-1 block font-semibold">رسوم التوصيل الافتراضية (ج.م) *</label>
+                <input
+                  type="number"
+                  step="1"
+                  {...register("deliveryFee")}
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
+                />
+                {errors.deliveryFee && (
+                  <p className="mt-1 text-xs text-destructive">{errors.deliveryFee.message}</p>
+                )}
+              </div>
+              <div>
+                <label className="mb-1 block font-semibold">الحد الأدنى للطلب (ج.م) *</label>
+                <input
+                  type="number"
+                  step="1"
+                  {...register("minOrderAmount")}
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
+                />
+                {errors.minOrderAmount && (
+                  <p className="mt-1 text-xs text-destructive">{errors.minOrderAmount.message}</p>
+                )}
+              </div>
+              <div>
+                <label className="mb-1 block font-semibold">متوسط وقت التحضير (دقيقة)</label>
+                <input
+                  type="number"
+                  {...register("estimatedPrepTimeMinutes")}
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
+                />
+                {errors.estimatedPrepTimeMinutes && (
+                  <p className="mt-1 text-xs text-destructive">
+                    {errors.estimatedPrepTimeMinutes.message}
+                  </p>
+                )}
+              </div>
             </div>
-            <div>
-              <label className="font-semibold block mb-1">ساعة الإغلاق</label>
-              <input
-                type="text"
-                {...register("closingHour")}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
-                placeholder="02:00 AM"
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="font-semibold block mb-1">
-                رسوم التوصيل الافتراضية (ج.م) *
-              </label>
+            <div className="flex items-center gap-3 pt-2">
               <input
-                type="number"
-                step="1"
-                {...register("deliveryFee")}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
+                type="checkbox"
+                id="deliveryOpen"
+                {...register("isDeliveryOpen")}
+                className="h-4 w-4 cursor-pointer rounded border-input text-primary"
               />
-              {errors.deliveryFee && (
-                <p className="text-xs text-destructive mt-1">
-                  {errors.deliveryFee.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="font-semibold block mb-1">
-                الحد الأدنى للطلب (ج.م) *
+              <label htmlFor="deliveryOpen" className="cursor-pointer font-semibold">
+                خدمة التوصيل مفعلة ومتاحة للطلبات الآن
               </label>
-              <input
-                type="number"
-                step="1"
-                {...register("minOrderAmount")}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
-              />
-              {errors.minOrderAmount && (
-                <p className="text-xs text-destructive mt-1">
-                  {errors.minOrderAmount.message}
-                </p>
-              )}
             </div>
-            <div>
-              <label className="font-semibold block mb-1">
-                متوسط وقت التحضير (دقيقة)
-              </label>
-              <input
-                type="number"
-                {...register("estimatedPrepTimeMinutes")}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
-              />
-              {errors.estimatedPrepTimeMinutes && (
-                <p className="text-xs text-destructive mt-1">
-                  {errors.estimatedPrepTimeMinutes.message}
-                </p>
-              )}
-            </div>
-          </div>
+          </CardContent>
+        </Card>
+      </fieldset>
 
-          <div className="flex items-center gap-3 pt-2">
-            <input
-              type="checkbox"
-              id="deliveryOpen"
-              {...register("isDeliveryOpen")}
-              className="w-4 h-4 rounded text-primary border-input cursor-pointer"
-            />
-            <label
-              htmlFor="deliveryOpen"
-              className="font-semibold cursor-pointer"
-            >
-              خدمة التوصيل مفعلة ومتاحة للطلبات الآن
-            </label>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="flex items-center gap-4">
-        <Button type="submit" disabled={isSaving} className="gap-2">
-          {savedSuccess ? (
-            <>
-              <Check className="w-4 h-4 text-emerald-400" />
-              <span>تم حفظ الإعدادات بنجاح</span>
-            </>
-          ) : (
-            <>
-              {isSaving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
-              <span>{isSaving ? "جاري الحفظ..." : "حفظ التغييرات"}</span>
-            </>
-          )}
-        </Button>
-      </div>
+      {canUpdate && (
+        <div className="flex items-center gap-4">
+          <Button type="submit" disabled={isSaving} className="gap-2">
+            {savedSuccess ? (
+              <>
+                <Check className="h-4 w-4 text-emerald-400" />
+                <span>تم حفظ الإعدادات بنجاح</span>
+              </>
+            ) : (
+              <>
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                <span>{isSaving ? "جاري الحفظ..." : "حفظ التغييرات"}</span>
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </form>
   );
 }

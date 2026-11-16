@@ -47,10 +47,7 @@ async function getForwardedHeaders(existingHeaders?: HeadersInit): Promise<Recor
   return headersObj;
 }
 
-export const get = async <T>(
-  url: string,
-  options?: RequestInit,
-): Promise<ApiResponse<T>> => {
+export const get = async <T>(url: string, options?: RequestInit): Promise<ApiResponse<T>> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   try {
     const controller = new AbortController();
@@ -165,10 +162,7 @@ export const patch = async <T, U = unknown>(
   } as ApiResponse<T>;
 };
 
-export const del = async <T>(
-  url: string,
-  options?: RequestInit,
-): Promise<ApiResponse<T>> => {
+export const del = async <T>(url: string, options?: RequestInit): Promise<ApiResponse<T>> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   const headers = await getForwardedHeaders(options?.headers);
 

@@ -11,10 +11,7 @@ export const createCoupon = async (payload: CreateCouponInput) => {
   return await post<Coupon, CreateCouponInput>("/coupons", payload);
 };
 
-export const updateCoupon = async (
-  id: string,
-  payload: UpdateCouponInput,
-) => {
+export const updateCoupon = async (id: string, payload: UpdateCouponInput) => {
   return await put<Coupon, UpdateCouponInput>(`/coupons/${id}`, payload);
 };
 

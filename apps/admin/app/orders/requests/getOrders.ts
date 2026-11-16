@@ -18,9 +18,7 @@ export interface GetOrdersResponse {
   totalPages: number;
 }
 
-export const getAdminOrders = async (
-  params?: GetOrdersParams,
-): Promise<GetOrdersResponse> => {
+export const getAdminOrders = async (params?: GetOrdersParams): Promise<GetOrdersResponse> => {
   const query = new URLSearchParams();
   if (params?.page) query.set("page", params.page.toString());
   if (params?.limit) query.set("limit", params.limit.toString());

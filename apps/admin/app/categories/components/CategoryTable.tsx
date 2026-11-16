@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Category } from "@workspace/types";
 import Image from "next/image";
+import { usePermission } from "@/hooks/usePermission";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -21,27 +22,19 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table";
-import {
-  Plus,
-  Trash2,
-  Edit,
-  CheckCircle2,
-  XCircle,
-  Loader2,
-} from "lucide-react";
-import {
-  createCategory,
-  updateCategory,
-  deleteCategory,
-} from "../requests/createCategory";
+import { Plus, Trash2, Edit, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { createCategory, updateCategory, deleteCategory } from "../requests/createCategory";
 
 export interface CategoryTableProps {
   categories: Category[];
 }
 
-export function CategoryTable({
-  categories: initialCategories,
-}: CategoryTableProps) {
+export function CategoryTable({ categories: initialCategories }: CategoryTableProps) {
+  const { can } = usePermission();
+  const canCreate = can("categories", "create");
+  const canUpdate = can("categories", "update");
+  const canDelete = can("categories", "delete");
+
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -101,9 +94,7 @@ export function CategoryTable({
     const res = await updateCategory(c.id, { isActive: updated });
     if (res.success) {
       setCategories((prev) =>
-        prev.map((item) =>
-          item.id === c.id ? { ...item, isActive: updated } : item,
-        ),
+        prev.map((item) => (item.id === c.id ? { ...item, isActive: updated } : item)),
       );
     }
   };
@@ -123,9 +114,7 @@ export function CategoryTable({
         const res = await updateCategory(editingCategory.id, data);
         if (res.success && res.data) {
           setCategories((prev) =>
-            prev.map((c) =>
-              c.id === editingCategory.id ? (res.data as Category) : c,
-            ),
+            prev.map((c) => (c.id === editingCategory.id ? (res.data as Category) : c)),
           );
           setIsModalOpen(false);
         }
@@ -143,14 +132,14 @@ export function CategoryTable({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <span className="text-sm text-muted-foreground">
-          إجمالي التصنيفات: {categories.length}
-        </span>
-        <Button onClick={openCreateModal} className="gap-2">
-          <Plus className="w-4 h-4" />
-          <span>إضافة تصنيف جديد</span>
-        </Button>
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">إجمالي التصنيفات: {categories.length}</span>
+        {canCreate && (
+          <Button onClick={openCreateModal} className="gap-2">
+            <Plus className="h-4 w-4" />
+            <span>إضافة تصنيف جديد</span>
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -171,7 +160,7 @@ export function CategoryTable({
                 <TableRow key={c.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg overflow-hidden relative shrink-0 bg-muted">
+                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                         {c.image ? (
                           <Image
                             src={c.image}
@@ -183,59 +172,71 @@ export function CategoryTable({
                         ) : null}
                       </div>
                       <div>
-                        <span className="font-bold text-xs block">
-                          {c.nameAr}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground block">
-                          {c.name}
-                        </span>
+                        <span className="block text-xs font-bold">{c.nameAr}</span>
+                        <span className="block text-[11px] text-muted-foreground">{c.name}</span>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="font-mono text-xs text-muted-foreground">
                     {c.slug}
                   </TableCell>
-                  <TableCell className="font-semibold text-xs">
+                  <TableCell className="text-xs font-semibold">
                     {c.productCount || 0} وجبة
                   </TableCell>
                   <TableCell className="text-xs">{c.sortOrder}</TableCell>
                   <TableCell>
-                    <button
-                      onClick={() => handleToggleActive(c)}
-                      className="cursor-pointer"
-                    >
-                      {c.isActive ? (
-                        <Badge variant="success" className="gap-1">
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>مفعل</span>
-                        </Badge>
-                      ) : (
-                        <Badge variant="destructive" className="gap-1">
-                          <XCircle className="w-3 h-3" />
-                          <span>معطل</span>
-                        </Badge>
-                      )}
-                    </button>
+                    {canUpdate ? (
+                      <button onClick={() => handleToggleActive(c)} className="cursor-pointer">
+                        {c.isActive ? (
+                          <Badge variant="success" className="gap-1">
+                            <CheckCircle2 className="h-3 w-3" />
+                            <span>مفعل</span>
+                          </Badge>
+                        ) : (
+                          <Badge variant="destructive" className="gap-1">
+                            <XCircle className="h-3 w-3" />
+                            <span>معطل</span>
+                          </Badge>
+                        )}
+                      </button>
+                    ) : c.isActive ? (
+                      <Badge variant="success" className="gap-1">
+                        <CheckCircle2 className="h-3 w-3" />
+                        <span>مفعل</span>
+                      </Badge>
+                    ) : (
+                      <Badge variant="destructive" className="gap-1">
+                        <XCircle className="h-3 w-3" />
+                        <span>معطل</span>
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center gap-1.5">
-                      <Button
-                        variant="outline"
-                        size="icon-xs"
-                        onClick={() => openEditModal(c)}
-                        title="تعديل"
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon-xs"
-                        onClick={() => handleDelete(c.id)}
-                        title="حذف"
-                        className="text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
+                      {canUpdate && (
+                        <Button
+                          variant="outline"
+                          size="icon-xs"
+                          onClick={() => openEditModal(c)}
+                          title="تعديل"
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button
+                          variant="outline"
+                          size="icon-xs"
+                          onClick={() => handleDelete(c.id)}
+                          title="حذف"
+                          className="text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {!canUpdate && !canDelete && (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -247,17 +248,15 @@ export function CategoryTable({
 
       {/* Category Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
           <form
             onSubmit={handleSubmit(onFormSubmit)}
-            className="bg-card border border-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl"
+            className="max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl"
             noValidate
           >
             <div className="flex items-center justify-between border-b border-border pb-3">
               <h3 className="text-lg font-bold">
-                {editingCategory
-                  ? "تعديل بيانات التصنيف"
-                  : "إضافة تصنيف طعام جديد"}
+                {editingCategory ? "تعديل بيانات التصنيف" : "إضافة تصنيف طعام جديد"}
               </h3>
               <Button
                 type="button"
@@ -271,106 +270,82 @@ export function CategoryTable({
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="font-semibold block mb-1">
-                  اسم التصنيف بالعربية *
-                </label>
+                <label className="mb-1 block font-semibold">اسم التصنيف بالعربية *</label>
                 <input
                   type="text"
                   {...register("nameAr", {
                     onChange: (e) => {
                       if (!editingCategory) {
-                        setValue(
-                          "slug",
-                          e.target.value.toLowerCase().replace(/\s+/g, "-"),
-                          {
-                            shouldValidate: true,
-                          },
-                        );
+                        setValue("slug", e.target.value.toLowerCase().replace(/\s+/g, "-"), {
+                          shouldValidate: true,
+                        });
                       }
                     },
                   })}
-                  className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
                   placeholder="مثال: طواجن فخار"
                 />
                 {errors.nameAr && (
-                  <p className="text-xs text-destructive mt-1">
-                    {errors.nameAr.message}
-                  </p>
+                  <p className="mt-1 text-xs text-destructive">{errors.nameAr.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="font-semibold block mb-1">
-                  اسم التصنيف بالإنجليزية *
-                </label>
+                <label className="mb-1 block font-semibold">اسم التصنيف بالإنجليزية *</label>
                 <input
                   type="text"
                   dir="ltr"
                   {...register("name")}
-                  className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
                   placeholder="e.g. Clay Tagines"
                 />
                 {errors.name && (
-                  <p className="text-xs text-destructive mt-1">
-                    {errors.name.message}
-                  </p>
+                  <p className="mt-1 text-xs text-destructive">{errors.name.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="font-semibold block mb-1">
-                  الرابط اللطيف (Slug) *
-                </label>
+                <label className="mb-1 block font-semibold">الرابط اللطيف (Slug) *</label>
                 <input
                   type="text"
                   dir="ltr"
                   {...register("slug")}
-                  className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
                   placeholder="clay-tagines"
                 />
                 {errors.slug && (
-                  <p className="text-xs text-destructive mt-1">
-                    {errors.slug.message}
-                  </p>
+                  <p className="mt-1 text-xs text-destructive">{errors.slug.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="font-semibold block mb-1">
-                  رابط صورة التصنيف (URL)
-                </label>
+                <label className="mb-1 block font-semibold">رابط صورة التصنيف (URL)</label>
                 <input
                   type="url"
                   dir="ltr"
                   {...register("image")}
-                  className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
                   placeholder="https://images.unsplash.com/..."
                 />
                 {errors.image && (
-                  <p className="text-xs text-destructive mt-1">
-                    {errors.image.message}
-                  </p>
+                  <p className="mt-1 text-xs text-destructive">{errors.image.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="font-semibold block mb-1">ترتيب العرض</label>
+                <label className="mb-1 block font-semibold">ترتيب العرض</label>
                 <input
                   type="number"
                   {...register("sortOrder")}
-                  className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
                 />
                 {errors.sortOrder && (
-                  <p className="text-xs text-destructive mt-1">
-                    {errors.sortOrder.message}
-                  </p>
+                  <p className="mt-1 text-xs text-destructive">{errors.sortOrder.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="font-semibold block mb-1">
-                  الوصف بالعربية
-                </label>
+                <label className="mb-1 block font-semibold">الوصف بالعربية</label>
                 <textarea
                   rows={2}
                   {...register("descriptionAr")}
@@ -380,7 +355,7 @@ export function CategoryTable({
               </div>
             </div>
 
-            <div className="border-t border-border pt-4 flex justify-end gap-2">
+            <div className="flex justify-end gap-2 border-t border-border pt-4">
               <Button
                 type="button"
                 variant="outline"
@@ -392,7 +367,7 @@ export function CategoryTable({
               <Button type="submit" size="sm" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 ml-1 animate-spin" />
+                    <Loader2 className="ml-1 h-4 w-4 animate-spin" />
                     جاري الحفظ...
                   </>
                 ) : (

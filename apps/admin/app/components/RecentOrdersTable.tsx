@@ -27,7 +27,10 @@ export interface RecentOrdersTableProps {
   orders: RecentOrder[];
 }
 
-const statusMap: Record<string, { label: string; variant: "default" | "success" | "warning" | "destructive" | "info" }> = {
+const statusMap: Record<
+  string,
+  { label: string; variant: "default" | "success" | "warning" | "destructive" | "info" }
+> = {
   pending: { label: "قيد الانتظار", variant: "warning" },
   confirmed: { label: "تم التأكيد", variant: "info" },
   preparing: { label: "جاري التجهيز", variant: "info" },
@@ -44,15 +47,15 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
         <CardTitle className="text-base font-bold">أحدث الطلبات</CardTitle>
         <Link
           href="/orders"
-          className="text-xs font-medium text-primary hover:underline inline-flex items-center gap-1"
+          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
         >
           <span>عرض كافة الطلبات</span>
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="h-3.5 w-3.5" />
         </Link>
       </CardHeader>
       <CardContent className="p-0">
         {orders.length === 0 ? (
-          <div className="text-center py-8 text-sm text-muted-foreground">
+          <div className="py-8 text-center text-sm text-muted-foreground">
             لا توجد طلبات مسجلة حتى الآن
           </div>
         ) : (
@@ -81,11 +84,13 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <span className="font-medium block text-xs">{o.customerName}</span>
-                        <span className="text-[11px] text-muted-foreground block">{o.customerPhone}</span>
+                        <span className="block text-xs font-medium">{o.customerName}</span>
+                        <span className="block text-[11px] text-muted-foreground">
+                          {o.customerPhone}
+                        </span>
                       </div>
                     </TableCell>
-                    <TableCell className="font-bold text-xs">{o.totalAmount} ج.م</TableCell>
+                    <TableCell className="text-xs font-bold">{o.totalAmount} ج.م</TableCell>
                     <TableCell>
                       <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
                     </TableCell>

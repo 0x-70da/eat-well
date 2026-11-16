@@ -22,13 +22,13 @@ export function TopSellingProducts({ products }: TopSellingProductsProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         {products.length === 0 ? (
-          <div className="text-center py-8 text-sm text-muted-foreground">
+          <div className="py-8 text-center text-sm text-muted-foreground">
             لا توجد إحصائيات كافية بعد
           </div>
         ) : (
           products.map((p, idx) => (
             <div key={p.productId || idx} className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-lg overflow-hidden relative shrink-0 bg-muted">
+              <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-muted">
                 {p.image ? (
                   <Image
                     src={p.image}
@@ -39,18 +39,12 @@ export function TopSellingProducts({ products }: TopSellingProductsProps) {
                   />
                 ) : null}
               </div>
-              <div className="flex-1 min-w-0">
-                <span className="font-semibold text-xs block truncate">
-                  {p.productNameAr}
-                </span>
-                <span className="text-[11px] text-muted-foreground block">
-                  {p.orderCount} طلب
-                </span>
+              <div className="min-w-0 flex-1">
+                <span className="block truncate text-xs font-semibold">{p.productNameAr}</span>
+                <span className="block text-[11px] text-muted-foreground">{p.orderCount} طلب</span>
               </div>
-              <div className="text-left shrink-0">
-                <span className="font-bold text-xs block text-primary">
-                  {p.totalRevenue} ج.م
-                </span>
+              <div className="shrink-0 text-left">
+                <span className="block text-xs font-bold text-primary">{p.totalRevenue} ج.م</span>
               </div>
             </div>
           ))

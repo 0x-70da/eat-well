@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Order, OrderStatus } from "@workspace/types";
+import { usePermission } from "@/hooks/usePermission";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
@@ -35,6 +36,11 @@ const statusMap: Record<
 };
 
 export function OrderTable({ orders: initialOrders }: OrderTableProps) {
+  const { can } = usePermission();
+  const canUpdateStatus = can("orders", "update-status");
+  const canCancelOrder = can("orders", "cancel");
+  const canMarkPaid = can("payments", "refund");
+
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -44,9 +50,7 @@ export function OrderTable({ orders: initialOrders }: OrderTableProps) {
     try {
       const res = await updateOrderStatus(orderId, { status: newStatus });
       if (res.success && res.data) {
-        setOrders((prev) =>
-          prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)),
-        );
+        setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)));
         if (selectedOrder?.id === orderId) {
           setSelectedOrder((prev) => (prev ? { ...prev, status: newStatus } : null));
         }
@@ -62,14 +66,10 @@ export function OrderTable({ orders: initialOrders }: OrderTableProps) {
       const res = await updatePaymentStatus(orderId, { paymentStatus: "paid" });
       if (res.success && res.data) {
         setOrders((prev) =>
-          prev.map((o) =>
-            o.id === orderId ? { ...o, paymentStatus: "paid" } : o,
-          ),
+          prev.map((o) => (o.id === orderId ? { ...o, paymentStatus: "paid" } : o)),
         );
         if (selectedOrder?.id === orderId) {
-          setSelectedOrder((prev) =>
-            prev ? { ...prev, paymentStatus: "paid" } : null,
-          );
+          setSelectedOrder((prev) => (prev ? { ...prev, paymentStatus: "paid" } : null));
         }
       }
     } finally {
@@ -147,7 +147,7 @@ export function OrderTable({ orders: initialOrders }: OrderTableProps) {
       <Card>
         <CardContent className="p-0">
           {orders.length === 0 ? (
-            <div className="text-center py-12 text-sm text-muted-foreground">
+            <div className="py-12 text-center text-sm text-muted-foreground">
               لا توجد طلبات مسجلة حالياً
             </div>
           ) : (
@@ -171,15 +171,13 @@ export function OrderTable({ orders: initialOrders }: OrderTableProps) {
                   };
                   return (
                     <TableRow key={order.id}>
-                      <TableCell className="font-bold text-primary font-mono text-xs">
+                      <TableCell className="font-mono text-xs font-bold text-primary">
                         {order.orderNumber}
                       </TableCell>
                       <TableCell>
                         <div>
-                          <span className="font-semibold text-xs block">
-                            {order.customerName}
-                          </span>
-                          <span className="text-[11px] text-muted-foreground block">
+                          <span className="block text-xs font-semibold">{order.customerName}</span>
+                          <span className="block text-[11px] text-muted-foreground">
                             {order.customerPhone}
                           </span>
                         </div>
@@ -187,17 +185,13 @@ export function OrderTable({ orders: initialOrders }: OrderTableProps) {
                       <TableCell className="max-w-[180px] truncate text-xs text-muted-foreground">
                         {order.deliveryAddress}
                       </TableCell>
-                      <TableCell className="font-bold text-xs">
-                        {order.totalAmount} ج.م
-                      </TableCell>
+                      <TableCell className="text-xs font-bold">{order.totalAmount} ج.م</TableCell>
                       <TableCell>
-                        <Badge variant={statusInfo.variant}>
-                          {statusInfo.label}
-                        </Badge>
+                        <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
                       </TableCell>
                       <TableCell>
                         <span
-                          className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                          className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                             order.paymentStatus === "paid"
                               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                               : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
@@ -214,7 +208,7 @@ export function OrderTable({ orders: initialOrders }: OrderTableProps) {
                             onClick={() => setSelectedOrder(order)}
                             title="عرض التفاصيل"
                           >
-                            <Eye className="w-3.5 h-3.5" />
+                            <Eye className="h-3.5 w-3.5" />
                           </Button>
                           <Button
                             variant="outline"
@@ -222,7 +216,7 @@ export function OrderTable({ orders: initialOrders }: OrderTableProps) {
                             onClick={() => handlePrint(order)}
                             title="طباعة الفاتورة"
                           >
-                            <Printer className="w-3.5 h-3.5" />
+                            <Printer className="h-3.5 w-3.5" />
                           </Button>
                         </div>
                       </TableCell>
@@ -237,43 +231,37 @@ export function OrderTable({ orders: initialOrders }: OrderTableProps) {
 
       {/* Order Details Modal */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="max-h-[90vh] w-full max-w-2xl space-y-6 overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
-                <h3 className="text-lg font-bold">
-                  تفاصيل الطلب: {selectedOrder.orderNumber}
-                </h3>
+                <h3 className="text-lg font-bold">تفاصيل الطلب: {selectedOrder.orderNumber}</h3>
                 <span className="text-xs text-muted-foreground">
                   تاريخ الطلب: {new Date(selectedOrder.createdAt).toLocaleString("ar-EG")}
                 </span>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSelectedOrder(null)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setSelectedOrder(null)}>
                 إغلاق
               </Button>
             </div>
 
             {/* Customer & Address Details */}
-            <div className="grid grid-cols-2 gap-4 text-xs bg-muted/40 p-4 rounded-xl">
+            <div className="grid grid-cols-2 gap-4 rounded-xl bg-muted/40 p-4 text-xs">
               <div>
-                <span className="text-muted-foreground block">العميل:</span>
+                <span className="block text-muted-foreground">العميل:</span>
                 <span className="font-bold">{selectedOrder.customerName}</span>
               </div>
               <div>
-                <span className="text-muted-foreground block">الهاتف:</span>
-                <span className="font-bold font-mono">{selectedOrder.customerPhone}</span>
+                <span className="block text-muted-foreground">الهاتف:</span>
+                <span className="font-mono font-bold">{selectedOrder.customerPhone}</span>
               </div>
               <div className="col-span-2">
-                <span className="text-muted-foreground block">عنوان التوصيل:</span>
+                <span className="block text-muted-foreground">عنوان التوصيل:</span>
                 <span className="font-medium">{selectedOrder.deliveryAddress}</span>
               </div>
               {selectedOrder.deliveryInstructions && (
                 <div className="col-span-2">
-                  <span className="text-muted-foreground block">تعليمات خاصة:</span>
+                  <span className="block text-muted-foreground">تعليمات خاصة:</span>
                   <span className="font-medium">{selectedOrder.deliveryInstructions}</span>
                 </div>
               )}
@@ -284,9 +272,9 @@ export function OrderTable({ orders: initialOrders }: OrderTableProps) {
               <h4 className="text-sm font-bold">الوجبات المطلوبة:</h4>
               <div className="space-y-2 divide-y divide-border/50">
                 {(selectedOrder.items || []).map((it) => (
-                  <div key={it.id} className="pt-2 flex justify-between items-center text-xs">
+                  <div key={it.id} className="flex items-center justify-between pt-2 text-xs">
                     <div>
-                      <span className="font-semibold block">{it.productNameAr}</span>
+                      <span className="block font-semibold">{it.productNameAr}</span>
                       <span className="text-muted-foreground">
                         الكمية: {it.quantity} × {it.productPrice} ج.م
                       </span>
@@ -298,7 +286,7 @@ export function OrderTable({ orders: initialOrders }: OrderTableProps) {
             </div>
 
             {/* Total breakdown */}
-            <div className="border-t border-border pt-4 space-y-1.5 text-xs">
+            <div className="space-y-1.5 border-t border-border pt-4 text-xs">
               <div className="flex justify-between">
                 <span>المجموع الفرعي:</span>
                 <span>{selectedOrder.subtotal} ج.م</span>
@@ -311,80 +299,91 @@ export function OrderTable({ orders: initialOrders }: OrderTableProps) {
                 <span>رسوم التوصيل:</span>
                 <span>{selectedOrder.deliveryFee} ج.م</span>
               </div>
-              <div className="flex justify-between text-base font-bold border-t border-border pt-2">
+              <div className="flex justify-between border-t border-border pt-2 text-base font-bold">
                 <span>الإجمالي النهائي:</span>
                 <span className="text-primary">{selectedOrder.totalAmount} ج.م</span>
               </div>
             </div>
 
             {/* Action buttons to update status */}
-            <div className="border-t border-border pt-4 space-y-3">
-              <h4 className="text-xs font-bold text-muted-foreground">
-                تحديث حالة الطلب:
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  size="xs"
-                  variant={selectedOrder.status === "confirmed" ? "default" : "outline"}
-                  disabled={updatingId === selectedOrder.id}
-                  onClick={() => handleStatusChange(selectedOrder.id, "confirmed")}
-                >
-                  تأكيد الطلب
-                </Button>
-                <Button
-                  size="xs"
-                  variant={selectedOrder.status === "preparing" ? "default" : "outline"}
-                  disabled={updatingId === selectedOrder.id}
-                  onClick={() => handleStatusChange(selectedOrder.id, "preparing")}
-                >
-                  بدء التجهيز
-                </Button>
-                <Button
-                  size="xs"
-                  variant={selectedOrder.status === "ready_for_pickup" ? "default" : "outline"}
-                  disabled={updatingId === selectedOrder.id}
-                  onClick={() => handleStatusChange(selectedOrder.id, "ready_for_pickup")}
-                >
-                  جاهز للاستلام
-                </Button>
-                <Button
-                  size="xs"
-                  variant={selectedOrder.status === "out_for_delivery" ? "default" : "outline"}
-                  disabled={updatingId === selectedOrder.id}
-                  onClick={() => handleStatusChange(selectedOrder.id, "out_for_delivery")}
-                >
-                  خرج للتوصيل
-                </Button>
-                <Button
-                  size="xs"
-                  variant={selectedOrder.status === "delivered" ? "default" : "outline"}
-                  disabled={updatingId === selectedOrder.id}
-                  onClick={() => handleStatusChange(selectedOrder.id, "delivered")}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                >
-                  تم التسليم
-                </Button>
-                <Button
-                  size="xs"
-                  variant="destructive"
-                  disabled={updatingId === selectedOrder.id}
-                  onClick={() => handleStatusChange(selectedOrder.id, "cancelled")}
-                >
-                  إلغاء الطلب
-                </Button>
+            {(canUpdateStatus || canCancelOrder || canMarkPaid) && (
+              <div className="space-y-3 border-t border-border pt-4">
+                <h4 className="text-xs font-bold text-muted-foreground">تحديث حالة الطلب:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {canUpdateStatus && (
+                    <>
+                      <Button
+                        size="xs"
+                        variant={selectedOrder.status === "confirmed" ? "default" : "outline"}
+                        disabled={updatingId === selectedOrder.id}
+                        onClick={() => handleStatusChange(selectedOrder.id, "confirmed")}
+                      >
+                        تأكيد الطلب
+                      </Button>
+                      <Button
+                        size="xs"
+                        variant={selectedOrder.status === "preparing" ? "default" : "outline"}
+                        disabled={updatingId === selectedOrder.id}
+                        onClick={() => handleStatusChange(selectedOrder.id, "preparing")}
+                      >
+                        بدء التجهيز
+                      </Button>
+                      <Button
+                        size="xs"
+                        variant={
+                          selectedOrder.status === "ready_for_pickup" ? "default" : "outline"
+                        }
+                        disabled={updatingId === selectedOrder.id}
+                        onClick={() => handleStatusChange(selectedOrder.id, "ready_for_pickup")}
+                      >
+                        جاهز للاستلام
+                      </Button>
+                      <Button
+                        size="xs"
+                        variant={
+                          selectedOrder.status === "out_for_delivery" ? "default" : "outline"
+                        }
+                        disabled={updatingId === selectedOrder.id}
+                        onClick={() => handleStatusChange(selectedOrder.id, "out_for_delivery")}
+                      >
+                        خرج للتوصيل
+                      </Button>
+                      <Button
+                        size="xs"
+                        variant={selectedOrder.status === "delivered" ? "default" : "outline"}
+                        disabled={updatingId === selectedOrder.id}
+                        onClick={() => handleStatusChange(selectedOrder.id, "delivered")}
+                        className="bg-emerald-600 text-white hover:bg-emerald-700"
+                      >
+                        تم التسليم
+                      </Button>
+                    </>
+                  )}
 
-                {selectedOrder.paymentStatus !== "paid" && (
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    className="border-emerald-500 text-emerald-600 hover:bg-emerald-50"
-                    onClick={() => handleMarkPaid(selectedOrder.id)}
-                  >
-                    تأكيد استلام المبلغ (مدفوع)
-                  </Button>
-                )}
+                  {canCancelOrder && (
+                    <Button
+                      size="xs"
+                      variant="destructive"
+                      disabled={updatingId === selectedOrder.id}
+                      onClick={() => handleStatusChange(selectedOrder.id, "cancelled")}
+                    >
+                      إلغاء الطلب
+                    </Button>
+                  )}
+
+                  {canMarkPaid && selectedOrder.paymentStatus !== "paid" && (
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      className="border-emerald-500 text-emerald-600 hover:bg-emerald-50"
+                      onClick={() => handleMarkPaid(selectedOrder.id)}
+                    >
+                      تأكيد استلام المبلغ (مدفوع)
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}

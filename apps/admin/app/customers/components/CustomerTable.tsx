@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { CustomerSummary, ManagedUser, UserRole } from "@workspace/types";
 import { useAdminSession } from "@/requests/useAdminSession";
+import { usePermission } from "@/hooks/usePermission";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -23,15 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table";
-import {
-  UserCheck,
-  Shield,
-  Ban,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
-  Search,
-} from "lucide-react";
+import { UserCheck, Shield, Ban, CheckCircle, AlertCircle, Loader2, Search } from "lucide-react";
 import { updateUserRole } from "../requests/updateUserRole";
 import { banUser } from "../requests/banUser";
 import { getUsers } from "../requests/getUsers";
@@ -49,10 +42,14 @@ const ROLE_LABELS: Record<
     variant: "default" | "secondary" | "outline" | "destructive" | "success";
   }
 > = {
-  super_admin: { label: "مدير عام", variant: "destructive" },
+  super_admin: { label: "مدير عام رئيسي", variant: "destructive" },
   admin: { label: "مدير نظام", variant: "default" },
   manager: { label: "مدير فرع", variant: "secondary" },
   order_manager: { label: "مسؤول طلبات", variant: "outline" },
+  product_manager: { label: "مسؤول منتجات", variant: "outline" },
+  inventory_manager: { label: "مسؤول مخزون", variant: "outline" },
+  customer_support: { label: "خدمة عملاء", variant: "outline" },
+  marketing_manager: { label: "مسؤول تسويق", variant: "outline" },
   staff: { label: "موظف", variant: "outline" },
   user: { label: "عميل", variant: "outline" },
 };
@@ -61,7 +58,15 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
   const { session } = useAdminSession();
   const currentUserId = session?.user?.id;
 
-  const [activeTab, setActiveTab] = useState<"users" | "customers">("users");
+  const { can } = usePermission();
+  const canListUsers = can("users", "list");
+  const canListCustomers = can("customers", "list");
+  const canAssignRole = can("roles", "assign");
+  const canBanUser = can("users", "ban");
+
+  const [activeTab, setActiveTab] = useState<"users" | "customers">(
+    canListUsers ? "users" : "customers",
+  );
   const [users, setUsers] = useState<ManagedUser[]>(initialUsers);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -139,9 +144,7 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
         return;
       }
       setUsers((prev) =>
-        prev.map((u) =>
-          u.id === roleModalUser.id ? { ...u, role: data.role } : u,
-        ),
+        prev.map((u) => (u.id === roleModalUser.id ? { ...u, role: data.role } : u)),
       );
       setRoleModalUser(null);
     } finally {
@@ -192,42 +195,46 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
     <div className="space-y-6">
       {/* Tabs */}
       <div className="flex border-b border-border">
-        <button
-          onClick={() => setActiveTab("users")}
-          className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
-            activeTab === "users"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          دليل المستخدمين والصلاحيات ({users.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("customers")}
-          className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
-            activeTab === "customers"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          ملخص إنفاق العملاء ({customers.length})
-        </button>
+        {canListUsers && (
+          <button
+            onClick={() => setActiveTab("users")}
+            className={`cursor-pointer border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors ${
+              activeTab === "users"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            دليل المستخدمين والصلاحيات ({users.length})
+          </button>
+        )}
+        {canListCustomers && (
+          <button
+            onClick={() => setActiveTab("customers")}
+            className={`cursor-pointer border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors ${
+              activeTab === "customers"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            ملخص إنفاق العملاء ({customers.length})
+          </button>
+        )}
       </div>
 
-      {activeTab === "users" ? (
+      {activeTab === "users" && canListUsers ? (
         <div className="space-y-4">
           {/* Filters Bar */}
-          <div className="flex flex-wrap items-center gap-3 bg-card p-3 rounded-xl border border-border">
-            <div className="flex-1 min-w-[200px] relative">
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-3">
+            <div className="relative min-w-[200px] flex-1">
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleApplyFilter()}
                 placeholder="بحث بالاسم أو البريد..."
-                className="w-full h-9 rounded-md border border-input bg-background pr-8 pl-3 text-xs"
+                className="h-9 w-full rounded-md border border-input bg-background pr-8 pl-3 text-xs"
               />
-              <Search className="w-4 h-4 absolute right-2.5 top-2.5 text-muted-foreground" />
+              <Search className="absolute top-2.5 right-2.5 h-4 w-4 text-muted-foreground" />
             </div>
 
             <select
@@ -236,10 +243,14 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
               className="h-9 rounded-md border border-input bg-background px-3 text-xs"
             >
               <option value="all">جميع الصلاحيات</option>
-              <option value="super_admin">مدير عام</option>
+              <option value="super_admin">مدير عام رئيسي</option>
               <option value="admin">مدير نظام</option>
               <option value="manager">مدير فرع</option>
               <option value="order_manager">مسؤول طلبات</option>
+              <option value="product_manager">مسؤول منتجات</option>
+              <option value="inventory_manager">مسؤول مخزون</option>
+              <option value="customer_support">خدمة عملاء</option>
+              <option value="marketing_manager">مسؤول تسويق</option>
               <option value="staff">موظف</option>
               <option value="user">عميل</option>
             </select>
@@ -261,9 +272,7 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
               disabled={isFiltering}
               className="gap-1.5"
             >
-              {isFiltering ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : null}
+              {isFiltering ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
               <span>تطبيق الفلتر</span>
             </Button>
           </div>
@@ -293,46 +302,40 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
                       <TableRow key={u.id}>
                         <TableCell>
                           <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                               {u.name.charAt(0)}
                             </div>
                             <div>
-                              <span className="font-semibold text-xs block">
+                              <span className="block text-xs font-semibold">
                                 {u.name} {isSelf ? "(أنت)" : ""}
                               </span>
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground font-mono">
+                        <TableCell className="font-mono text-xs text-muted-foreground">
                           {u.email}
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant={roleInfo.variant}
-                            className="text-[11px]"
-                          >
+                          <Badge variant={roleInfo.variant} className="text-[11px]">
                             {roleInfo.label}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           {u.banned ? (
                             <div className="flex flex-col">
-                              <Badge
-                                variant="destructive"
-                                className="gap-1 w-fit"
-                              >
-                                <Ban className="w-3 h-3" />
+                              <Badge variant="destructive" className="w-fit gap-1">
+                                <Ban className="h-3 w-3" />
                                 <span>محظور</span>
                               </Badge>
                               {u.banReason && (
-                                <span className="text-[10px] text-muted-foreground mt-0.5">
+                                <span className="mt-0.5 text-[10px] text-muted-foreground">
                                   {u.banReason}
                                 </span>
                               )}
                             </div>
                           ) : (
-                            <Badge variant="success" className="gap-1 w-fit">
-                              <CheckCircle className="w-3 h-3" />
+                            <Badge variant="success" className="w-fit gap-1">
+                              <CheckCircle className="h-3 w-3" />
                               <span>نشط</span>
                             </Badge>
                           )}
@@ -342,40 +345,43 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center justify-center gap-1.5">
-                            <Button
-                              variant="outline"
-                              size="xs"
-                              disabled={isSelf}
-                              onClick={() => openRoleModal(u)}
-                              title={
-                                isSelf
-                                  ? "لا يمكنك تعديل صلاحياتك"
-                                  : "تعديل الصلاحية"
-                              }
-                              className="gap-1"
-                            >
-                              <Shield className="w-3 h-3" />
-                              <span className="text-[11px]">الصلاحية</span>
-                            </Button>
-                            <Button
-                              variant={u.banned ? "outline" : "destructive"}
-                              size="xs"
-                              disabled={isSelf}
-                              onClick={() => openBanModal(u)}
-                              title={
-                                isSelf
-                                  ? "لا يمكنك حظر نفسك"
-                                  : u.banned
-                                    ? "إلغاء الحظر"
-                                    : "حظر الحساب"
-                              }
-                              className="gap-1"
-                            >
-                              <Ban className="w-3 h-3" />
-                              <span className="text-[11px]">
-                                {u.banned ? "إلغاء الحظر" : "حظر"}
-                              </span>
-                            </Button>
+                            {canAssignRole && (
+                              <Button
+                                variant="outline"
+                                size="xs"
+                                disabled={isSelf}
+                                onClick={() => openRoleModal(u)}
+                                title={isSelf ? "لا يمكنك تعديل صلاحياتك" : "تعديل الصلاحية"}
+                                className="gap-1"
+                              >
+                                <Shield className="h-3 w-3" />
+                                <span className="text-[11px]">الصلاحية</span>
+                              </Button>
+                            )}
+                            {canBanUser && (
+                              <Button
+                                variant={u.banned ? "outline" : "destructive"}
+                                size="xs"
+                                disabled={isSelf}
+                                onClick={() => openBanModal(u)}
+                                title={
+                                  isSelf
+                                    ? "لا يمكنك حظر نفسك"
+                                    : u.banned
+                                      ? "إلغاء الحظر"
+                                      : "حظر الحساب"
+                                }
+                                className="gap-1"
+                              >
+                                <Ban className="h-3 w-3" />
+                                <span className="text-[11px]">
+                                  {u.banned ? "إلغاء الحظر" : "حظر"}
+                                </span>
+                              </Button>
+                            )}
+                            {!canAssignRole && !canBanUser && (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -390,7 +396,7 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
         <Card>
           <CardContent className="p-0">
             {customers.length === 0 ? (
-              <div className="text-center py-12 text-sm text-muted-foreground">
+              <div className="py-12 text-center text-sm text-muted-foreground">
                 لا يوجد عملاء مسجلين حالياً
               </div>
             ) : (
@@ -409,21 +415,17 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
                     <TableRow key={c.id}>
                       <TableCell>
                         <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
-                            <UserCheck className="w-4 h-4" />
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                            <UserCheck className="h-4 w-4" />
                           </div>
-                          <span className="font-semibold text-xs">
-                            {c.name}
-                          </span>
+                          <span className="text-xs font-semibold">{c.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground font-mono">
+                      <TableCell className="font-mono text-xs text-muted-foreground">
                         {c.email}
                       </TableCell>
-                      <TableCell className="font-semibold text-xs">
-                        {c.ordersCount} طلب
-                      </TableCell>
-                      <TableCell className="font-bold text-xs text-primary">
+                      <TableCell className="text-xs font-semibold">{c.ordersCount} طلب</TableCell>
+                      <TableCell className="text-xs font-bold text-primary">
                         {c.totalSpent} ج.م
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
@@ -440,15 +442,13 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
 
       {/* Role Management Modal */}
       {roleModalUser && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
           <form
             onSubmit={handleRoleSubmit(onRoleSubmit)}
-            className="bg-card border border-border rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl"
+            className="w-full max-w-md space-y-4 rounded-2xl border border-border bg-card p-6 shadow-2xl"
           >
             <div className="flex items-center justify-between border-b border-border pb-3">
-              <h3 className="text-base font-bold">
-                تعديل صلاحية: {roleModalUser.name}
-              </h3>
+              <h3 className="text-base font-bold">تعديل صلاحية: {roleModalUser.name}</h3>
               <Button
                 type="button"
                 variant="outline"
@@ -460,39 +460,35 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
             </div>
 
             {actionError && (
-              <div className="flex items-center gap-2 p-3 text-xs rounded-lg border border-destructive/30 bg-destructive/10 text-destructive">
-                <AlertCircle className="w-4 h-4 shrink-0" />
+              <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+                <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>{actionError}</span>
               </div>
             )}
 
             <div className="space-y-2 text-xs">
-              <label className="font-semibold block">
-                اختر الصلاحية الجديدة:
-              </label>
+              <label className="block font-semibold">اختر الصلاحية الجديدة:</label>
               <select
                 {...registerRole("role")}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 text-xs"
+                className="h-9 w-full rounded-md border border-input bg-background px-3 text-xs"
               >
                 <option value="user">عميل (مستخدم عادي)</option>
                 <option value="staff">موظف (Staff)</option>
-                <option value="order_manager">
-                  مسؤول طلبات (Order Manager)
-                </option>
+                <option value="order_manager">مسؤول طلبات (Order Manager)</option>
+                <option value="product_manager">مسؤول قائمة وطعام (Product Manager)</option>
+                <option value="inventory_manager">مسؤول مخزون (Inventory Manager)</option>
+                <option value="customer_support">خدمة عملاء (Customer Support)</option>
+                <option value="marketing_manager">مسؤول تسويق وعروض (Marketing Manager)</option>
                 <option value="manager">مدير فرع (Manager)</option>
                 <option value="admin">مدير نظام (Admin)</option>
-                <option value="super_admin">
-                  مدير عام رئيسي (Super Admin)
-                </option>
+                <option value="super_admin">مدير عام رئيسي (Super Admin)</option>
               </select>
               {roleErrors.role && (
-                <p className="text-destructive text-xs">
-                  {roleErrors.role.message}
-                </p>
+                <p className="text-xs text-destructive">{roleErrors.role.message}</p>
               )}
             </div>
 
-            <div className="border-t border-border pt-3 flex justify-end gap-2">
+            <div className="flex justify-end gap-2 border-t border-border pt-3">
               <Button
                 type="button"
                 variant="outline"
@@ -504,7 +500,7 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
               <Button type="submit" size="sm" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 ml-1 animate-spin" />
+                    <Loader2 className="ml-1 h-4 w-4 animate-spin" />
                     جاري الحفظ...
                   </>
                 ) : (
@@ -518,16 +514,14 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
 
       {/* Ban Management Modal */}
       {banModalUser && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
           <form
             onSubmit={handleBanSubmit(onBanSubmit)}
-            className="bg-card border border-border rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl"
+            className="w-full max-w-md space-y-4 rounded-2xl border border-border bg-card p-6 shadow-2xl"
           >
             <div className="flex items-center justify-between border-b border-border pb-3">
               <h3 className="text-base font-bold">
-                {banModalUser.banned
-                  ? "إلغاء حظر الحساب"
-                  : "حظر أو تعليق الحساب"}
+                {banModalUser.banned ? "إلغاء حظر الحساب" : "حظر أو تعليق الحساب"}
               </h3>
               <Button
                 type="button"
@@ -540,8 +534,8 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
             </div>
 
             {actionError && (
-              <div className="flex items-center gap-2 p-3 text-xs rounded-lg border border-destructive/30 bg-destructive/10 text-destructive">
-                <AlertCircle className="w-4 h-4 shrink-0" />
+              <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+                <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>{actionError}</span>
               </div>
             )}
@@ -549,51 +543,45 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
             <div className="space-y-3 text-xs">
               <p className="text-muted-foreground">
                 المستخدم المستهدف:{" "}
-                <span className="font-semibold text-foreground">
-                  {banModalUser.name}
-                </span>{" "}
-                ({banModalUser.email})
+                <span className="font-semibold text-foreground">{banModalUser.name}</span> (
+                {banModalUser.email})
               </p>
 
               {!banModalUser.banned ? (
                 <>
                   <div>
-                    <label className="font-semibold block mb-1">
-                      سبب الحظر / التعليق *
-                    </label>
+                    <label className="mb-1 block font-semibold">سبب الحظر / التعليق *</label>
                     <input
                       type="text"
                       {...registerBan("banReason")}
-                      className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
+                      className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
                       placeholder="مثال: سلوك غير لائق أو مخالفة شروط الخدمة"
                     />
                     {banErrors.banReason && (
-                      <p className="text-destructive text-xs mt-1">
-                        {banErrors.banReason.message}
-                      </p>
+                      <p className="mt-1 text-xs text-destructive">{banErrors.banReason.message}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="font-semibold block mb-1">
+                    <label className="mb-1 block font-semibold">
                       مدة الحظر (بالأيام - اتركه فارغاً للحظر الدائم)
                     </label>
                     <input
                       type="number"
                       {...registerBan("banExpiresInDays")}
-                      className="w-full h-9 rounded-md border border-input bg-background px-3 py-1"
+                      className="h-9 w-full rounded-md border border-input bg-background px-3 py-1"
                       placeholder="مثال: 7"
                     />
                   </div>
                 </>
               ) : (
-                <p className="text-emerald-600 dark:text-emerald-400 font-medium">
+                <p className="font-medium text-emerald-600 dark:text-emerald-400">
                   هل أنت متأكد من رغبتك في إلغاء الحظر وإعادة تفعيل هذا الحساب؟
                 </p>
               )}
             </div>
 
-            <div className="border-t border-border pt-3 flex justify-end gap-2">
+            <div className="flex justify-end gap-2 border-t border-border pt-3">
               <Button
                 type="button"
                 variant="outline"
@@ -610,7 +598,7 @@ export function CustomerTable({ customers, initialUsers }: CustomerTableProps) {
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 ml-1 animate-spin" />
+                    <Loader2 className="ml-1 h-4 w-4 animate-spin" />
                     جاري التنفيذ...
                   </>
                 ) : banModalUser.banned ? (
